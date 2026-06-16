@@ -1,0 +1,22 @@
+{
+  "repository": "dzinh1901-lang/aurelean-app",
+  "stage": "MVP/prototype with production-style gates",
+  "risk_level": "high",
+  "orchestrator_status": "known_project_orchestrator",
+  "blockers": [
+    "Full production auth/RBAC and live provider activation remain staged"
+  ],
+  "next_milestone": "Read-only health report and approval gate consolidation",
+  "evidence": [
+    {
+      "type": "repository_file",
+      "path": "README.md",
+      "note": "Product scope and scripts"
+    },
+    {
+      "type": "repository_file",
+      "path": ".codex/agents.registry.json",
+      "note": "Agent registry and approval policy"
+    }
+  ]
+}

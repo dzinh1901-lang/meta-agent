@@ -1,0 +1,73 @@
+schema_version: 0.1.0
+default_mode: read_only_until_authorized
+self_approval_allowed: false
+
+roles:
+  principal_approver:
+    description: Portfolio owner for production, roadmap, and major priority decisions.
+  engineering_approver:
+    description: Code, architecture, validation, release readiness.
+  security_approver:
+    description: Secrets, auth, tenant isolation, data access, live services.
+  finance_approver:
+    description: Budget, spend, vendor payment, billing activation.
+  procurement_approver:
+    description: Vendor selection, supplier process, procurement review.
+  marketing_approver:
+    description: Public claims, publication, outreach, paid media.
+  legal_compliance_approver:
+    description: Contracts, privacy, regulated domains, export-control-sensitive decisions.
+
+actions:
+  read_repository_metadata:
+    risk: low
+    approvals_required: []
+  create_internal_plan:
+    risk: low
+    approvals_required: []
+  create_internal_task_packet:
+    risk: medium
+    approvals_required: []
+  create_github_issue:
+    risk: medium
+    approvals_required: [engineering_approver]
+  create_pull_request_draft:
+    risk: high
+    approvals_required: [engineering_approver]
+  mutate_code:
+    risk: high
+    approvals_required: [engineering_approver]
+  modify_auth_tenant_security:
+    risk: critical
+    approvals_required: [security_approver, engineering_approver]
+  activate_live_billing:
+    risk: critical
+    approvals_required: [principal_approver, finance_approver, security_approver]
+  deploy_production:
+    risk: critical
+    approvals_required: [principal_approver, engineering_approver, security_approver]
+  send_external_message:
+    risk: high
+    approvals_required: [marketing_approver, principal_approver]
+  publish_public_marketing:
+    risk: critical
+    approvals_required: [marketing_approver, principal_approver]
+  commit_paid_marketing_spend:
+    risk: critical
+    approvals_required: [marketing_approver, finance_approver, principal_approver]
+  procurement_vendor_research:
+    risk: medium
+    approvals_required: []
+  procurement_vendor_award:
+    risk: critical
+    approvals_required: [procurement_approver, finance_approver, principal_approver]
+  contract_or_legal_commitment:
+    risk: critical
+    approvals_required: [legal_compliance_approver, principal_approver]
+  export_customer_or_supplier_data:
+    risk: critical
+    approvals_required: [security_approver, legal_compliance_approver, principal_approver]
+  regulated_domain_action:
+    risk: critical
+    approvals_required: [legal_compliance_approver, security_approver, principal_approver]
+    default_block: true

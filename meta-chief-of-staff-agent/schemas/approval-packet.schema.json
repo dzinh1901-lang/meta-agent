@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApprovalPacket",
+  "type": "object",
+  "required": [
+    "approval_id",
+    "requested_action",
+    "action_type",
+    "risk_level",
+    "affected_repositories",
+    "requesting_agent",
+    "required_approver_roles",
+    "evidence_bundle",
+    "rollback_plan",
+    "expires_at",
+    "decision_options"
+  ],
+  "properties": {
+    "approval_id": {
+      "type": "string"
+    },
+    "requested_action": {
+      "type": "string"
+    },
+    "action_type": {
+      "type": "string"
+    },
+    "risk_level": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "affected_repositories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requesting_agent": {
+      "type": "string"
+    },
+    "required_approver_roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_bundle": {
+      "type": "object"
+    },
+    "expected_outcome": {
+      "type": "string"
+    },
+    "rollback_plan": {
+      "type": "string"
+    },
+    "constraints": {
+      "type": "object"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "decision_options": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "approve_once",
+          "approve_with_limits",
+          "reject",
+          "request_changes",
+          "always_reject"
+        ]
+      }
+    }
+  }
+}

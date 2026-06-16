@@ -1,0 +1,24 @@
+{
+  "name": "meta-chief-of-staff-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portfolio-level Chief of Staff / meta-agent design package for supervising repository orchestrators with human authorization gates.",
+  "type": "commonjs",
+  "scripts": {
+    "validate": "node scripts/validate-project.js",
+    "dry-run": "node scripts/run-dry-run.js"
+  },
+  "keywords": [
+    "agents",
+    "orchestration",
+    "chief-of-staff",
+    "human-in-the-loop",
+    "governance",
+    "procurement",
+    "marketing",
+    "github"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

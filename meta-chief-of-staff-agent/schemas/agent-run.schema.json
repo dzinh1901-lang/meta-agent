@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentRun",
+  "type": "object",
+  "required": [
+    "run_id",
+    "agent",
+    "status",
+    "input_summary",
+    "outputs",
+    "audit_correlation_id"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "running",
+        "paused_for_approval",
+        "completed",
+        "blocked",
+        "failed"
+      ]
+    },
+    "input_summary": {
+      "type": "string"
+    },
+    "outputs": {
+      "type": "array"
+    },
+    "approval_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "audit_correlation_id": {
+      "type": "string"
+    }
+  }
+}

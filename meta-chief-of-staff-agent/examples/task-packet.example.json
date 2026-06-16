@@ -1,0 +1,20 @@
+{
+  "task_id": "task_2026_06_15_001",
+  "objective": "Produce read-only project health reports for AURELEAN and DesignOS and identify missing approval gates.",
+  "repository": "dzinh1901-lang/aurelean-app",
+  "target_orchestrator": ".codex/agents/codex-orchestrator.md",
+  "risk_level": "high",
+  "requested_outputs": [
+    "project_health",
+    "validation_plan",
+    "approval_gaps",
+    "final_synthesis"
+  ],
+  "validation_requirements": [
+    "npm run validate:codex-agents",
+    "npm run verify"
+  ],
+  "requires_human_approval": true,
+  "approval_id": "appr_2026_06_15_001",
+  "audit_correlation_id": "corr_2026_06_15_001"
+}

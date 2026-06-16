@@ -1,0 +1,661 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-06-15",
+  "owner": "dzinh1901-lang",
+  "source": "GitHub connector repository inventory; detailed file inspection currently available for aurelean-app and designOS-App only.",
+  "portfolio_policy": {
+    "default_mode": "read_only_until_authorized",
+    "self_approval_allowed": false,
+    "regulated_defense_or_controlled_goods_procurement_allowed": false,
+    "production_mutation_requires_human_approval": true,
+    "external_message_delivery_requires_human_approval": true,
+    "supplier_or_vendor_award_requires_human_approval": true,
+    "paid_media_spend_requires_budget_approval": true
+  },
+  "repositories": [
+    {
+      "repository_full_name": "dzinh1901-lang/auren-studio",
+      "name": "auren-studio",
+      "domain_guess": "studio/product surface",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/materials-intelligence",
+      "name": "materials-intelligence",
+      "domain_guess": "materials intelligence",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/robotics-intelligence",
+      "name": "robotics-intelligence",
+      "domain_guess": "robotics intelligence",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/oatip",
+      "name": "oatip",
+      "domain_guess": "project/application",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/naval-defence-catalogue",
+      "name": "naval-defence-catalogue",
+      "domain_guess": "regulated/defense catalogue",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "restricted_pending_legal_compliance_review",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/pelagia",
+      "name": "pelagia",
+      "domain_guess": "marine/project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/cfd-engineering-studio",
+      "name": "cfd-engineering-studio",
+      "domain_guess": "engineering simulation/studio",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/vectora",
+      "name": "vectora",
+      "domain_guess": "project/application",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/seastates",
+      "name": "seastates",
+      "domain_guess": "marine/weather/ocean intelligence",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/vectormaris",
+      "name": "vectormaris",
+      "domain_guess": "marine/vector intelligence",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/faraday",
+      "name": "faraday",
+      "domain_guess": "engineering/energy project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/stem-study-platform",
+      "name": "stem-study-platform",
+      "domain_guess": "education platform",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/ionforge",
+      "name": "ionforge",
+      "domain_guess": "engineering/materials project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/harborgrid",
+      "name": "harborgrid",
+      "domain_guess": "marine/logistics project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/designOSweb",
+      "name": "designOSweb",
+      "domain_guess": "DesignOS web surface",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/illustre-studio",
+      "name": "illustre-studio",
+      "domain_guess": "creative/studio project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/illustre",
+      "name": "illustre",
+      "domain_guess": "creative project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/IO",
+      "name": "IO",
+      "domain_guess": "platform/project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/global-market-intelligence",
+      "name": "global-market-intelligence",
+      "domain_guess": "market intelligence",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/IO-landing-page",
+      "name": "IO-landing-page",
+      "domain_guess": "landing page",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/vireo",
+      "name": "vireo",
+      "domain_guess": "project/application",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/Meridianstudio",
+      "name": "Meridianstudio",
+      "domain_guess": "studio/project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/designOS-App",
+      "name": "designOS-App",
+      "domain_guess": "production DesignOS app",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "known_project_orchestrator",
+      "orchestrator": {
+        "known": true,
+        "path": ".claude/agents/vds-orchestrator.md",
+        "approval_policy_known": true
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/aurelean-app",
+      "name": "aurelean-app",
+      "domain_guess": "B2B textile sourcing/RFQ/procurement platform",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "known_project_orchestrator",
+      "orchestrator": {
+        "known": true,
+        "path": ".claude/agents/aurelean-orchestrator.md",
+        "approval_policy_known": true
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/monsieur-app",
+      "name": "monsieur-app",
+      "domain_guess": "commerce/app project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/meridian-yacht-atelier",
+      "name": "meridian-yacht-atelier",
+      "domain_guess": "marine/yacht atelier",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/designos-orchestrator-v2",
+      "name": "designos-orchestrator-v2",
+      "domain_guess": "orchestration/runtime project",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    },
+    {
+      "repository_full_name": "dzinh1901-lang/agentops-runtime",
+      "name": "agentops-runtime",
+      "domain_guess": "agent operations runtime",
+      "visibility": "private",
+      "default_branch": "main",
+      "oversight_status": "pending_discovery",
+      "orchestrator": {
+        "known": false,
+        "path": null,
+        "approval_policy_known": false
+      },
+      "required_next_discovery": [
+        "README.md",
+        "package.json",
+        ".claude/agents/registry.json",
+        ".codex/agents.registry.json",
+        "docs/agents/SUBAGENTS.md",
+        "ROADMAP.md",
+        "PRD.md",
+        "TASKS.md"
+      ]
+    }
+  ]
+}

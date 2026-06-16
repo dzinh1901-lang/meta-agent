@@ -1,0 +1,38 @@
+schema_version: 0.1.0
+fail_closed_on_unknown_action: true
+
+risk_levels:
+  low:
+    description: Read-only, internal, non-sensitive.
+    human_approval_required: false
+  medium:
+    description: Internal planning or low-impact repository coordination.
+    human_approval_required: conditional
+  high:
+    description: Code, data, external drafts, procurement recommendations, security-sensitive configuration.
+    human_approval_required: true
+  critical:
+    description: Production, billing, spend, vendor award, legal/compliance, regulated-domain, public/external action.
+    human_approval_required: true
+
+hard_blocks:
+  - self_approval
+  - bypass_repository_orchestrator
+  - secrets_access_without_security_approval
+  - production_mutation_without_approval
+  - external_message_without_approval
+  - public_marketing_without_approval
+  - paid_spend_without_finance_approval
+  - vendor_award_without_procurement_finance_approval
+  - regulated_or_controlled_goods_procurement
+  - removing_approval_gates_without_policy_review
+
+required_evidence_for_high_or_critical:
+  - action_summary
+  - affected_repositories
+  - policy_version
+  - risk_reason
+  - validation_plan
+  - rollback_plan
+  - approver_roles
+  - expiry

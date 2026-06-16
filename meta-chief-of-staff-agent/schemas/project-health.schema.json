@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProjectHealth",
+  "type": "object",
+  "required": [
+    "repository",
+    "stage",
+    "risk_level",
+    "orchestrator_status",
+    "blockers",
+    "next_milestone",
+    "evidence"
+  ],
+  "properties": {
+    "repository": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "risk_level": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical",
+        "unknown"
+      ]
+    },
+    "orchestrator_status": {
+      "type": "string"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_milestone": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

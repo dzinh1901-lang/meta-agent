@@ -1,0 +1,72 @@
+{
+  "agent": "meta-chief-of-staff-agent",
+  "mode": "dry-run",
+  "action": {
+    "type": "create_pull_request_draft",
+    "summary": "Create a draft PR for read-only project health reporting across AURELEAN and DesignOS."
+  },
+  "policy_decision": {
+    "actionType": "create_pull_request_draft",
+    "risk": "high",
+    "approvals": [
+      "engineering_approver"
+    ],
+    "allowed": false,
+    "requiresHumanApproval": true,
+    "reason": "Classified by action risk policy."
+  },
+  "known_orchestrators": [
+    {
+      "repository": "dzinh1901-lang/designOS-App",
+      "orchestrator_path": ".claude/agents/vds-orchestrator.md"
+    },
+    {
+      "repository": "dzinh1901-lang/aurelean-app",
+      "orchestrator_path": ".claude/agents/aurelean-orchestrator.md"
+    }
+  ],
+  "next_steps": [
+    "Pause execution until a human approver resolves the approval packet."
+  ],
+  "approval_packet": {
+    "approval_id": "appr_bd7ed30d8a6e",
+    "requested_action": "Create a draft PR for read-only project health reporting across AURELEAN and DesignOS.",
+    "action_type": "create_pull_request_draft",
+    "risk_level": "high",
+    "affected_repositories": [
+      "dzinh1901-lang/aurelean-app",
+      "dzinh1901-lang/designOS-App"
+    ],
+    "requesting_agent": "meta-chief-of-staff-agent",
+    "required_approver_roles": [
+      "engineering_approver"
+    ],
+    "evidence_bundle": {
+      "policy_version": "0.1.0",
+      "registry": "registries/repositories.seed.json"
+    },
+    "expected_outcome": "Draft PR only. No merge, deploy, credential, billing, procurement, or external messaging action.",
+    "rollback_plan": "Close draft PR and delete branch if human reviewer rejects scope.",
+    "constraints": {
+      "allowed_actions": [
+        "create_draft_pr",
+        "attach_docs",
+        "run_validation"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "deploy",
+        "access_secrets",
+        "send_external_message",
+        "commit_spend"
+      ]
+    },
+    "expires_at": "2026-06-18T00:00:00Z",
+    "decision_options": [
+      "approve_once",
+      "approve_with_limits",
+      "reject",
+      "request_changes"
+    ]
+  }
+}
