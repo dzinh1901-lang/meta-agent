@@ -7,6 +7,17 @@ const { loadRegistry, knownOrchestrators } = require('./repository-registry');
 function planAction(input) {
   const registry = loadRegistry();
   const decision = classifyAction(input.action.type, input.context || {});
+  const now = new Date();
+  const expiryHoursByRisk = {
+    low: 0,
+    medium: 24 * 7,
+    high: 24 * 3,
+    critical: 24
+  };
+  const riskHours = expiryHoursByRisk[decision.risk] ?? 0;
+  const expiresAt = decision.requiresHumanApproval
+    ? new Date(now.getTime() + riskHours * 60 * 60 * 1000).toISOString()
+    : (input.expiresAt || new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString());
   const plan = {
     agent: 'meta-chief-of-staff-agent',
     mode: 'dry-run',
@@ -29,7 +40,9 @@ function planAction(input) {
       expectedOutcome: input.expectedOutcome || 'Scoped, approval-gated execution only.',
       rollbackPlan: input.rollbackPlan || 'Stop run, discard generated changes, and preserve audit record.',
       constraints: input.constraints || { forbidden_actions: ['self_approve', 'bypass_orchestrator', 'access_secrets'] },
-      expiresAt: input.expiresAt || '2026-06-18T00:00:00Z'
+      expiresAt,
+      costImpact: input.costImpact,
+      customerSupplierImpact: input.customerSupplierImpact
     });
     plan.approval_packet = approvalPacket;
     plan.next_steps.push('Pause execution until a human approver resolves the approval packet.');

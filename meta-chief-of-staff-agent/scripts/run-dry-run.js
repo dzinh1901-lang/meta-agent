@@ -17,6 +17,8 @@ const plan = planAction({
   },
   expectedOutcome: 'Draft PR only. No merge, deploy, credential, billing, procurement, or external messaging action.',
   rollbackPlan: 'Close draft PR and delete branch if human reviewer rejects scope.',
+  costImpact: 0,
+  customerSupplierImpact: 'No supplier/customer communication included in this dry-run scenario.',
   constraints: {
     allowed_actions: ['create_draft_pr', 'attach_docs', 'run_validation'],
     forbidden_actions: ['merge', 'deploy', 'access_secrets', 'send_external_message', 'commit_spend']

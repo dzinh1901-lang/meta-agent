@@ -7,7 +7,19 @@ function stableId(prefix, payload) {
   return `${prefix}_${hash}`;
 }
 
-function buildApprovalPacket({ action, decision, repositories, requestingAgent, evidenceBundle, expectedOutcome, rollbackPlan, constraints = {}, expiresAt }) {
+function buildApprovalPacket({
+  action,
+  decision,
+  repositories,
+  requestingAgent,
+  evidenceBundle,
+  expectedOutcome,
+  rollbackPlan,
+  constraints = {},
+  expiresAt,
+  costImpact,
+  customerSupplierImpact
+}) {
   const base = {
     requested_action: action.summary,
     action_type: action.type,
@@ -22,6 +34,15 @@ function buildApprovalPacket({ action, decision, repositories, requestingAgent, 
     expires_at: expiresAt,
     decision_options: ['approve_once', 'approve_with_limits', 'reject', 'request_changes']
   };
+
+  if (typeof costImpact !== 'undefined') {
+    base.cost_impact = costImpact;
+  }
+
+  if (typeof customerSupplierImpact !== 'undefined') {
+    base.customer_supplier_impact = customerSupplierImpact;
+  }
+
   return { approval_id: stableId('appr', base), ...base };
 }
 

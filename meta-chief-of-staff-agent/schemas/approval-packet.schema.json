@@ -60,6 +60,12 @@
     "constraints": {
       "type": "object"
     },
+    "cost_impact": {
+      "type": "number"
+    },
+    "customer_supplier_impact": {
+      "type": "string"
+    },
     "expires_at": {
       "type": "string"
     },
