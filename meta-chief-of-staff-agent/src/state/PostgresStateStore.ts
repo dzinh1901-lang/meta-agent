@@ -22,7 +22,7 @@ type PostgresStateStoreOptions = {
 
 const DEFAULT_TABLES: Record<StateCollection, string> = {
   repositories: 'repositories',
-  projectHealth: 'project_health',
+  projectHealth: 'project_health_snapshots',
   projectHealthSnapshots: 'project_health_snapshots',
   taskPackets: 'task_packets',
   approvalPackets: 'approval_packets',
@@ -32,6 +32,7 @@ const DEFAULT_TABLES: Record<StateCollection, string> = {
   agentRuns: 'agent_runs',
   routingPlans: 'routing_plans',
   procurementWorkflows: 'procurement_workflows',
+  backupPlans: 'backup_plans',
   auditEvents: 'audit_events',
   policyVersions: 'policy_versions',
 };
@@ -110,7 +111,7 @@ export class PostgresStateStore implements StateStore {
   }
 
   async clear(): Promise<void> {
-    const tables = Object.values(DEFAULT_TABLES).map((name) => `${this.schema}.${this.prefixed(name)}`);
+    const tables = Array.from(new Set(Object.values(DEFAULT_TABLES))).map((name) => `${this.schema}.${this.prefixed(name)}`);
     const statement = `truncate table ${tables.join(', ')} restart identity`;
     await this.pool.query(statement, []);
   }
