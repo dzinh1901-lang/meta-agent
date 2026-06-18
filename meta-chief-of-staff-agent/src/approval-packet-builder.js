@@ -18,8 +18,15 @@ const APPROVAL_PACKET_REQUIRED_FIELDS = [
 
 function defaultExpiryForRisk(risk, now = new Date()) {
   const hoursByRisk = { low: 0, medium: 24 * 7, high: 24 * 3, critical: 24 };
-  const hours = hoursByRisk[risk] || 24;
+  const hours = hoursByRisk[risk] ?? 24;
   return new Date(now.getTime() + hours * 60 * 60 * 1000).toISOString();
+}
+
+function assertValidIsoDate(value, fieldName) {
+  if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) {
+    throw new Error(`${fieldName} must be a valid ISO date string.`);
+  }
+  return value;
 }
 
 function buildApprovalPacket({
@@ -38,11 +45,21 @@ function buildApprovalPacket({
   auditCorrelationId,
   status = 'pending'
 }) {
+  if (!decision || decision.blocked) {
+    throw new Error('Approval packets cannot be created for hard-blocked actions.');
+  }
   const actionType = requireNonEmptyString(action.type, 'action.type');
   const requestedAction = requireNonEmptyString(action.summary || action.requested_action, 'action.summary');
-  const now = createdAt || new Date().toISOString();
+  const now = assertValidIsoDate(createdAt || new Date().toISOString(), 'createdAt');
+  const expiry = assertValidIsoDate(expiresAt || defaultExpiryForRisk(decision.risk, new Date(now)), 'expiresAt');
+  if (Date.parse(expiry) <= Date.parse(now)) {
+    throw new Error('expiresAt must be later than createdAt.');
+  }
   const evidence = evidenceBundle || {};
   const affectedRepositories = normalizeArray(repositories);
+  if (affectedRepositories.length === 0) throw new Error('At least one affected repository is required.');
+  if (typeof evidence !== 'object' || Array.isArray(evidence)) throw new Error('evidenceBundle must be an object.');
+
   const base = {
     requested_action: requestedAction,
     action_type: actionType,
@@ -55,17 +72,17 @@ function buildApprovalPacket({
     expected_outcome: expectedOutcome || 'Scoped, approval-gated execution only.',
     rollback_plan: rollbackPlan || 'Stop run, discard generated changes, and preserve audit record.',
     constraints,
-    expires_at: expiresAt || defaultExpiryForRisk(decision.risk),
+    expires_at: expiry,
     created_at: now,
     status,
     decision_options: ['approve_once', 'approve_with_limits', 'reject', 'request_changes', 'always_reject'],
     requested_authority: {
       category: decision.category || 'unknown',
       effect: decision.effect || 'unknown',
-      requires_human_approval: Boolean(decision.requiresHumanApproval || decision.blocked)
+      requires_human_approval: Boolean(decision.requiresHumanApproval)
     },
     risk_reason: decision.reason,
-    block_reasons: normalizeArray(decision.blockReasons),
+    block_reasons: [],
     audit_correlation_id: auditCorrelationId || null
   };
 
@@ -87,4 +104,4 @@ function buildApprovalPacket({
   return assertRequiredFields(packet, APPROVAL_PACKET_REQUIRED_FIELDS, 'ApprovalPacket');
 }
 
-module.exports = { APPROVAL_PACKET_REQUIRED_FIELDS, defaultExpiryForRisk, buildApprovalPacket };
+module.exports = { APPROVAL_PACKET_REQUIRED_FIELDS, defaultExpiryForRisk, assertValidIsoDate, buildApprovalPacket };
