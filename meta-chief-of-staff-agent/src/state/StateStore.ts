@@ -10,6 +10,7 @@ export type StateCollection =
   | 'agentRuns'
   | 'routingPlans'
   | 'procurementWorkflows'
+  | 'backupPlans'
   | 'auditEvents'
   | 'policyVersions';
 
