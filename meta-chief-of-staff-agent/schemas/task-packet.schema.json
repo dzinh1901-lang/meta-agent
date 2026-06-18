@@ -7,58 +7,44 @@
     "objective",
     "repository",
     "target_orchestrator",
+    "action_type",
+    "requested_by",
     "risk_level",
     "requested_outputs",
     "validation_requirements",
-    "audit_correlation_id"
+    "requires_human_approval",
+    "approval_id",
+    "audit_correlation_id",
+    "priority",
+    "evidence_refs",
+    "policy_decision",
+    "blocked",
+    "block_reasons",
+    "execution_disposition",
+    "routing_status"
   ],
   "properties": {
-    "task_id": {
-      "type": "string"
-    },
-    "objective": {
-      "type": "string"
-    },
-    "repository": {
-      "type": "string"
-    },
-    "target_orchestrator": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "risk_level": {
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "critical"
-      ]
-    },
-    "requested_outputs": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "validation_requirements": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "requires_human_approval": {
-      "type": "boolean"
-    },
-    "approval_id": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "audit_correlation_id": {
-      "type": "string"
-    }
-  }
+    "task_id": { "type": "string", "minLength": 1 },
+    "objective": { "type": "string", "minLength": 1 },
+    "repository": { "type": "string", "minLength": 1 },
+    "target_orchestrator": { "type": ["string", "null"] },
+    "action_type": { "type": "string", "minLength": 1 },
+    "requested_by": { "type": "string", "minLength": 1 },
+    "risk_level": { "enum": ["low", "medium", "high", "critical"] },
+    "requested_outputs": { "type": "array", "items": { "type": "string" } },
+    "validation_requirements": { "type": "array", "items": { "type": "string" } },
+    "requires_human_approval": { "type": "boolean" },
+    "approval_id": { "type": ["string", "null"] },
+    "approval_status": { "type": "string" },
+    "audit_correlation_id": { "type": "string", "minLength": 1 },
+    "priority": { "enum": ["low", "medium", "high", "critical"] },
+    "due_at": { "type": ["string", "null"], "format": "date-time" },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "policy_decision": { "type": "object" },
+    "blocked": { "type": "boolean" },
+    "block_reasons": { "type": "array", "items": { "type": "string" } },
+    "execution_disposition": { "enum": ["allowed", "approval_required", "blocked"] },
+    "routing_status": { "enum": ["orchestrator_known", "requires_orchestrator_discovery", "blocked_by_policy"] }
+  },
+  "additionalProperties": false
 }
