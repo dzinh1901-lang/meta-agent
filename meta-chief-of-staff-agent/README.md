@@ -1,26 +1,37 @@
 # Meta Chief of Staff Agent
 
-A governed portfolio-level agent that supervises GitHub project orchestrators, prepares project and procurement workflows, and pauses sensitive tool calls for human authorization.
+A governed portfolio-level agent that supervises GitHub project orchestrators, delegates domain work to specialist agents, prepares controlled workflows, and pauses sensitive tool calls for human authorization.
 
-The Chief of Staff is a manager, not an autonomous operator. It can inspect, classify, plan, route, summarize, and prepare approval artifacts. It cannot self-approve, access secrets, merge pull requests, deploy, mutate production, publish externally, spend money, award vendors, or sign contracts.
+The Chief of Staff is not an autonomous operator. It can inspect, classify, plan, route, summarize, and prepare approval artifacts. It cannot self-approve, access secrets, merge pull requests, deploy, mutate production, publish externally, spend money, award vendors, or sign contracts.
 
 ## Architecture
 
 ```txt
 Human operator / approvers
   -> Meta Chief of Staff Agent
-       -> deterministic policy and packet tools
-       -> Cross-Repository Orchestrator
-       -> Procurement Oversight Agent
-       -> Marketing Oversight Agent
-       -> Finance Ops Agent
-       -> Security Compliance Agent
-       -> Audit Evidence Agent
+       -> deterministic policy and control-plane tools
+       -> handoff: Cross-Repository Orchestrator
+       -> handoff: Procurement Oversight Agent
+       -> handoff: Marketing Oversight Agent
+       -> handoff: Finance Ops Agent
+       -> handoff: Security Compliance Agent
+       -> handoff: Audit Evidence Agent
   -> repository-level orchestrators
   -> project specialist agents
 ```
 
-The root agent uses the OpenAI Agents SDK manager-as-tools pattern. Sensitive controlled-action requests use SDK human-in-the-loop interruptions and resume from `RunState` after an explicit approval or rejection.
+The top-level agent uses OpenAI Agents SDK handoffs. Each handoff carries structured routing metadata and writes an audit event before the specialist takes ownership of the run. Specialist agents expose narrow deterministic tools rather than broad mutation capabilities. Sensitive controlled-action requests still use SDK human-in-the-loop interruptions and resume from `RunState` after an explicit approval or rejection.
+
+## Specialist responsibilities and tools
+
+| Specialist | Narrow tools |
+|---|---|
+| Cross-Repository Orchestrator | repository/orchestrator compatibility, dry-run routing, orchestrator response normalization |
+| Procurement Oversight Agent | procurement classification, vendor risk comparison, governed procurement workflow |
+| Marketing Oversight Agent | claim evidence review, attribution readiness, governed campaign brief |
+| Finance Ops Agent | budget utilization, spend variance, billing-readiness review |
+| Security Compliance Agent | action/security review, required evidence, hard-block and approval analysis |
+| Audit Evidence Agent | StateStore-backed evidence summary, pending approvals, correlated workflow records |
 
 ## Current implementation
 
@@ -28,11 +39,13 @@ The root agent uses the OpenAI Agents SDK manager-as-tools pattern. Sensitive co
 - Task packets, approval packets, pending approval queues, and multi-role decisions
 - Run pause, resume, reject, and blocked-state transitions
 - Repository-orchestrator compatibility and dry-run portfolio routing
+- Six separate Agents SDK specialists and six structured handoffs
+- Audited handoff events persisted to `handoffEvents` and `auditEvents`
 - Procurement research, shortlist, award, contract, and payment readiness gates
 - Vendor risk matrix and repository/budget/vendor-scoped approval packets
+- Campaign claim, attribution, privacy, publication, outreach, and paid-spend readiness checks
+- Budget and security review adapters
 - Typed state-store interface with an in-memory implementation
-- Root Agents SDK manager and six specialist agents
-- Read-only portfolio/control-plane tools
 - Interactive CLI with local session memory and serialized approval run state
 - Deterministic Phase 2–4 tests and GitHub Actions verification
 
@@ -47,8 +60,6 @@ npm run verify
 `npm run verify` executes deterministic validation and Phase 2–4 tests, TypeScript type checking, and a non-network SDK graph smoke test.
 
 ## Interactive agent
-
-Set runtime configuration:
 
 ```bash
 export OPENAI_API_KEY="..."
@@ -68,7 +79,7 @@ npm run sdk:chat
 Run one request:
 
 ```bash
-npm run sdk:chat -- --once "Summarize the portfolio and show pending approvals."
+npm run sdk:chat -- --once "Review the portfolio and hand off procurement risks to the correct specialist."
 ```
 
 Resume a serialized approval run:
@@ -90,6 +101,7 @@ npm run procurement:demo
 npm run test:phase2
 npm run test:phase3
 npm run test:phase4
+npm run test:phase4:specialists
 npm run phase4
 npm run typecheck
 npm run sdk:smoke
@@ -100,8 +112,10 @@ npm run verify
 ## Safety behavior
 
 - Read-only actions may proceed without approval.
+- Handoffs validate repository authorization and record the reason, objective, priority, action type, and evidence references.
 - Approval-required actions create task, approval, queue, and run records and pause.
 - Hard-blocked or incomplete commitment actions do not receive an execution approval packet.
+- Specialist tools produce decision support and workflow artifacts; they do not execute external side effects.
 - `queue_controlled_action` validates the referenced approval packet, repository, action, expiry, environment constraints, and operator roles.
 - A successful controlled-action authorization records an audit event with `external_side_effect_executed: false`.
 - No live GitHub write, deployment, billing, marketing-send, vendor-award, contract, or payment adapter is enabled.
@@ -114,14 +128,14 @@ npm run verify
 | Phase 1 — Evidence-backed repository discovery | Partial; seed registry only |
 | Phase 2 — Risk and policy enforcement | Implemented |
 | Phase 3 — Task and approval packets | Implemented |
-| Phase 4 — Orchestrator routing and procurement pilot | Implemented for dry-run/local use |
-| Phase 5 — Marketing oversight workflow | Next domain phase |
+| Phase 4 — Orchestrator and oversight adapters | Implemented and CI-verified on the audit branch |
+| Phase 5 — Full marketing integration | Deterministic brief/readiness core exists; provider integrations are not enabled |
 | Phase 6 — Controlled GitHub writes | Not enabled |
 | Phase 7–8 — Dashboard and production operations | Not ready |
 
 ## Audit
 
-See [`docs/COMPREHENSIVE-AUDIT-2026-06-18.md`](docs/COMPREHENSIVE-AUDIT-2026-06-18.md) for findings, production blockers, and the recommended implementation sequence.
+See [`docs/COMPREHENSIVE-AUDIT-2026-06-18.md`](docs/COMPREHENSIVE-AUDIT-2026-06-18.md) and [`docs/PHASE-4-ORCHESTRATOR-OVERSIGHT-ADAPTERS.md`](docs/PHASE-4-ORCHESTRATOR-OVERSIGHT-ADAPTERS.md).
 
 ## Production blockers
 
