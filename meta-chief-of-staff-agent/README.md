@@ -35,12 +35,10 @@ meta-chief-of-staff-agent/
 │   ├── integration-blueprint.md
 │   ├── operating-cadence.md
 │   ├── repository-inventory.md
-│   └── PHASE-2-RISK-POLICY-ENFORCEMENT.md
+│   ├── PHASE-2-RISK-POLICY-ENFORCEMENT.md
+│   └── PHASE-3-TASK-APPROVAL-PACKETS.md
 ├── policies/
-│   ├── authorization-matrix.yaml
-│   └── action-risk-policy.yaml
 ├── registries/
-│   └── repositories.seed.json
 ├── schemas/
 ├── examples/
 ├── src/
@@ -48,14 +46,20 @@ meta-chief-of-staff-agent/
 │   ├── approval-policy.js
 │   ├── guardrails.js
 │   ├── meta-chief-agent.js
+│   ├── packet-utils.js
+│   ├── packet-workflow.js
 │   ├── policy-engine.js
-│   └── repository-registry.js
+│   ├── repository-registry.js
+│   ├── run-state.js
+│   └── task-packet-builder.js
 ├── scripts/
 │   ├── run-dry-run.js
+│   ├── run-phase3-demo.js
 │   ├── run-policy-check.js
 │   └── validate-project.js
 ├── tests/
-│   └── phase2-policy.test.js
+│   ├── phase2-policy.test.js
+│   └── phase3-packets.test.js
 └── package.json
 ```
 
@@ -65,21 +69,25 @@ meta-chief-of-staff-agent/
 npm run validate
 npm run dry-run
 npm run policy:check
+npm run packet:demo
 npm run test:phase2
+npm run test:phase3
 npm run phase2
+npm run phase3
 ```
 
-The included JavaScript is deterministic and dependency-free. It validates that the design package is coherent, loads the repository registry, classifies actions by risk, enforces guardrails, validates scoped approvals, and produces approval packets where human authorization is required.
+The included JavaScript is deterministic and dependency-free. It validates the design package, loads the repository registry, classifies actions by risk, enforces guardrails, validates scoped approvals, produces task packets, produces approval packets, creates pending approval queue items, and models pause/resume run state.
 
 ## Current Build Status
 
 - Phase 0 scaffold: complete.
 - Phase 1 read-only discovery design target: defined in roadmap/docs.
-- Phase 2 risk and policy enforcement: implemented in `src/policy-engine.js`, `src/guardrails.js`, `src/approval-policy.js`, and `tests/phase2-policy.test.js`.
+- Phase 2 risk and policy enforcement: implemented.
+- Phase 3 task and approval packet generation: implemented.
 
 ## Immediate Next Commit Target
 
-1. Add typed task packet and approval packet builders.
-2. Add pending approval queue records.
-3. Add run-state transitions for pause/resume.
-4. Keep write, procurement, live-service, billing, marketing-publication, and regulated-domain actions blocked until explicit human authorization exists.
+1. Add repository-orchestrator routing adapters.
+2. Add typed state-store interfaces for persisted task packets, approvals, and agent runs.
+3. Add read-only GitHub discovery adapter for project-health evidence.
+4. Keep external side effects blocked until explicit human authorization exists.
