@@ -1,20 +1,37 @@
 {
   "name": "meta-chief-of-staff-agent",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Portfolio-level Chief of Staff meta-agent design package for supervising repository orchestrators with human authorization gates.",
+  "description": "Governed portfolio-level Chief of Staff agent built with the OpenAI Agents SDK.",
   "type": "commonjs",
   "scripts": {
     "validate": "node scripts/validate-project.js",
     "dry-run": "node scripts/run-dry-run.js",
     "policy:check": "node scripts/run-policy-check.js",
     "packet:demo": "node scripts/run-phase3-demo.js",
+    "procurement:demo": "node scripts/run-phase4-procurement-demo.js",
     "test:phase2": "node tests/phase2-policy.test.js",
     "test:phase3": "node tests/phase3-packets.test.js",
+    "test:phase4": "node tests/phase4-routing-procurement.test.js",
+    "typecheck": "tsc --noEmit",
+    "sdk:smoke": "tsx src/sdk/smoke.ts",
+    "sdk:chat": "tsx src/sdk/cli.ts",
+    "sdk:resume": "tsx src/sdk/cli.ts --resume",
     "phase2": "npm run validate && npm run policy:check && npm run test:phase2",
-    "phase3": "npm run validate && npm run policy:check && npm run packet:demo && npm run test:phase2 && npm run test:phase3"
+    "phase3": "npm run validate && npm run policy:check && npm run packet:demo && npm run test:phase2 && npm run test:phase3",
+    "phase4": "npm run validate && npm run procurement:demo && npm run test:phase2 && npm run test:phase3 && npm run test:phase4",
+    "verify": "npm run phase4 && npm run typecheck && npm run sdk:smoke"
+  },
+  "dependencies": {
+    "@openai/agents": "0.11.6",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.13",
+    "tsx": "4.22.3",
+    "typescript": "5.9.3"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
