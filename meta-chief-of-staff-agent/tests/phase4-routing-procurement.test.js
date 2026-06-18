@@ -99,16 +99,30 @@ assert.equal(selectOversightAgent(classifyAction('deploy_production')).name, 'se
 assert.equal(selectOversightAgent(classifyAction('read_repository_metadata'), 'Create audit evidence').name, 'audit-evidence-agent');
 assert.equal(listOversightAgents().length, 6);
 
-const researchDecision = classifyProcurementRequest({ intent: 'research', estimated_cost: 0 });
+const researchDecision = classifyProcurementRequest({ intent: 'research', estimated_cost: 0, vendors: [] });
 assert.equal(researchDecision.blocked, false);
 assert.equal(researchDecision.allowed, true);
 assert.equal(researchDecision.risk, 'medium');
 
+const incompleteShortlist = classifyProcurementRequest({
+  intent: 'shortlist',
+  estimated_cost: 12000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha' }]
+});
+assert.equal(incompleteShortlist.blocked, true);
+assert.ok(incompleteShortlist.readiness_block_reasons.some((reason) => reason.includes('two vendor options')));
+assert.equal(incompleteShortlist.requiresHumanApproval, false);
+
 const shortlistDecision = classifyProcurementRequest({
   intent: 'shortlist',
   estimated_cost: 12000,
+  budget_owner: 'portfolio_principal',
   data_access: true,
-  contract_required: true
+  contract_required: true,
+  legal_compliance_review_id: 'legal-review-001',
+  security_review_id: 'security-review-001',
+  vendors: [{ vendor_id: 'vendor_alpha' }, { vendor_id: 'vendor_beta' }]
 });
 assert.equal(shortlistDecision.blocked, false);
 assert.equal(shortlistDecision.requiresHumanApproval, true);
@@ -117,10 +131,43 @@ assert.ok(shortlistDecision.approvals.includes('security_approver'));
 assert.ok(shortlistDecision.approvals.includes('legal_compliance_approver'));
 assert.ok(shortlistDecision.approvals.includes('finance_approver'));
 
-const controlledDecision = classifyProcurementRequest({ intent: 'award', controlled_goods: true, estimated_cost: 5000 });
+const incompleteAward = classifyProcurementRequest({
+  intent: 'award',
+  estimated_cost: 5000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha' }]
+});
+assert.equal(incompleteAward.blocked, true);
+assert.ok(incompleteAward.readiness_block_reasons.some((reason) => reason.includes('selected vendor ID')));
+
+const completeAward = classifyProcurementRequest({
+  intent: 'award',
+  estimated_cost: 5000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha' }],
+  selected_vendor_id: 'vendor_alpha'
+});
+assert.equal(completeAward.blocked, false);
+assert.equal(completeAward.requiresHumanApproval, true);
+assert.ok(completeAward.approvals.includes('principal_approver'));
+assert.ok(completeAward.approvals.includes('procurement_approver'));
+assert.ok(completeAward.approvals.includes('finance_approver'));
+
+const incompletePayment = classifyProcurementRequest({
+  intent: 'payment',
+  estimated_cost: 5000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha' }],
+  selected_vendor_id: 'vendor_alpha'
+});
+assert.equal(incompletePayment.blocked, true);
+assert.ok(incompletePayment.readiness_block_reasons.some((reason) => reason.includes('contract ID or purchase order ID')));
+
+const controlledDecision = classifyProcurementRequest({ intent: 'award', controlled_goods: true, estimated_cost: 5000, vendors: [] });
 assert.equal(controlledDecision.blocked, true);
 assert.equal(controlledDecision.requiresHumanApproval, false);
 assert.ok(controlledDecision.reason.includes('Controlled-goods'));
+assert.ok(controlledDecision.hard_block_reasons.length > 0);
 
 const vendorMatrix = buildVendorRiskMatrix([
   { vendor_name: 'High Risk Vendor', data_access: true, system_access: true, security_review_status: 'pending', legal_review_status: 'pending', sole_source: true },
@@ -138,8 +185,13 @@ const procurementWorkflow = buildProcurementWorkflow({
   estimated_cost: 12000,
   budget_owner: 'portfolio_principal',
   contract_required: true,
+  legal_compliance_review_id: 'legal-review-001',
+  security_review_id: 'security-review-001',
   data_access: true,
-  vendors: [{ vendor_name: 'Vendor Alpha', data_access: true, security_review_status: 'pending', legal_review_status: 'pending' }],
+  vendors: [
+    { vendor_id: 'vendor_alpha', vendor_name: 'Vendor Alpha', data_access: true, security_review_status: 'pending', legal_review_status: 'pending' },
+    { vendor_id: 'vendor_beta', vendor_name: 'Vendor Beta', data_access: false, security_review_status: 'approved', legal_review_status: 'approved' }
+  ],
   expiresAt: '2999-01-01T00:00:00Z',
   createdAt: '2026-06-18T00:00:00Z'
 });
@@ -147,21 +199,43 @@ assert.equal(procurementWorkflow.mode, 'dry-run');
 assert.equal(procurementWorkflow.external_side_effects_executed, false);
 assert.equal(procurementWorkflow.procurement_brief.autonomous_spend_allowed, false);
 assert.equal(procurementWorkflow.procurement_brief.autonomous_vendor_award_allowed, false);
+assert.equal(procurementWorkflow.procurement_brief.blocked, false);
 assert.equal(procurementWorkflow.task_workflow.agent_run.status, 'paused_for_approval');
 assert.ok(procurementWorkflow.task_workflow.approval_packet.required_approver_roles.length >= 4);
+assert.equal(procurementWorkflow.task_workflow.approval_packet.constraints.allowed_repository, 'dzinh1901-lang/aurelean-app');
+assert.equal(procurementWorkflow.task_workflow.approval_packet.constraints.maximum_budget, 12000);
+assert.deepEqual(procurementWorkflow.task_workflow.approval_packet.constraints.allowed_vendor_ids, ['vendor_alpha', 'vendor_beta']);
+assert.equal(procurementWorkflow.task_workflow.approval_packet.constraints.execution_authorized, false);
 
 const blockedProcurement = buildProcurementWorkflow({
+  registry,
+  repository: 'dzinh1901-lang/aurelean-app',
+  summary: 'Incomplete vendor award.',
+  intent: 'award',
+  estimated_cost: 5000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha', vendor_name: 'Vendor Alpha', security_review_status: 'approved', legal_review_status: 'approved' }],
+  createdAt: '2026-06-18T00:00:00Z'
+});
+assert.equal(blockedProcurement.task_workflow.agent_run.status, 'blocked');
+assert.equal(blockedProcurement.task_workflow.approval_packet, null);
+assert.equal(blockedProcurement.procurement_brief.recommendation, 'request_changes_before_approval');
+
+const hardBlockedProcurement = buildProcurementWorkflow({
   registry,
   repository: 'dzinh1901-lang/aurelean-app',
   summary: 'Blocked controlled-goods request.',
   intent: 'award',
   controlled_goods: true,
   estimated_cost: 5000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha', vendor_name: 'Vendor Alpha' }],
+  selected_vendor_id: 'vendor_alpha',
   createdAt: '2026-06-18T00:00:00Z'
 });
-assert.equal(blockedProcurement.task_workflow.agent_run.status, 'blocked');
-assert.equal(blockedProcurement.task_workflow.approval_packet, null);
-assert.equal(blockedProcurement.procurement_brief.recommendation, 'stop_and_escalate_to_legal_compliance');
+assert.equal(hardBlockedProcurement.task_workflow.agent_run.status, 'blocked');
+assert.equal(hardBlockedProcurement.task_workflow.approval_packet, null);
+assert.equal(hardBlockedProcurement.procurement_brief.recommendation, 'stop_and_escalate_to_legal_compliance');
 
 let approvalQueue = procurementWorkflow.task_workflow.pending_approval;
 const pausedRun = procurementWorkflow.task_workflow.agent_run;
@@ -187,4 +261,4 @@ approvalQueue = applyApprovalDecision(approvalQueue, finalDecision);
 assert.equal(approvalQueue.status, 'approved');
 assert.equal(resumeRunFromApprovalQueue(pausedRun, approvalQueue).status, 'running');
 
-console.log(JSON.stringify({ ok: true, suite: 'phase4-routing-procurement', assertions: 63 }, null, 2));
+console.log(JSON.stringify({ ok: true, suite: 'phase4-routing-procurement', assertions: 86 }, null, 2));
