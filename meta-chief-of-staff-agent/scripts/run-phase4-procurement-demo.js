@@ -5,13 +5,15 @@ const { buildProcurementWorkflow } = require('../src/procurement/procurement-wor
 
 const workflow = buildProcurementWorkflow({
   repository: 'dzinh1901-lang/aurelean-app',
-  summary: 'Compare approved SaaS vendors for read-only project analytics.',
+  summary: 'Compare SaaS vendors for read-only project analytics.',
   intent: 'shortlist',
   category: 'software_service',
   estimated_cost: 12000,
   currency: 'USD',
   budget_owner: 'portfolio_principal',
   contract_required: true,
+  legal_compliance_review_id: 'legal-review-demo-001',
+  security_review_id: 'security-review-demo-001',
   data_access: true,
   system_access: false,
   cross_border: false,
