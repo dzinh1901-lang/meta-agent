@@ -8,39 +8,20 @@
     "status",
     "input_summary",
     "outputs",
-    "audit_correlation_id"
+    "approval_ids",
+    "audit_correlation_id",
+    "created_at"
   ],
   "properties": {
-    "run_id": {
-      "type": "string"
-    },
-    "agent": {
-      "type": "string"
-    },
-    "status": {
-      "enum": [
-        "planned",
-        "running",
-        "paused_for_approval",
-        "completed",
-        "blocked",
-        "failed"
-      ]
-    },
-    "input_summary": {
-      "type": "string"
-    },
-    "outputs": {
-      "type": "array"
-    },
-    "approval_ids": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "audit_correlation_id": {
-      "type": "string"
-    }
-  }
+    "run_id": { "type": "string", "minLength": 1 },
+    "agent": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["planned", "running", "paused_for_approval", "completed", "blocked", "failed"] },
+    "input_summary": { "type": "string", "minLength": 1 },
+    "outputs": { "type": "array" },
+    "approval_ids": { "type": "array", "items": { "type": "string" } },
+    "approval_decision_ids": { "type": "array", "items": { "type": "string" } },
+    "audit_correlation_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
 }
