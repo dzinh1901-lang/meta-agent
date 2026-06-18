@@ -32,7 +32,7 @@ function requireNonEmptyString(value, fieldName) {
 
 function assertRequiredFields(object, fields, label) {
   for (const field of fields) {
-    if (typeof object[field] === 'undefined' || object[field] === null) {
+    if (!Object.prototype.hasOwnProperty.call(object, field) || typeof object[field] === 'undefined') {
       throw new Error(`${label} missing required field: ${field}`);
     }
   }
