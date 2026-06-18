@@ -65,7 +65,28 @@ jobs:
         run: cat phase4.log && exit 1
 
       - name: Type-check Agents SDK runtime
-        run: npm run typecheck
+        id: typecheck
+        continue-on-error: true
+        run: npm run typecheck > typecheck.log 2>&1
+
+      - name: Report TypeScript diagnostics
+        if: steps.typecheck.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const log = fs.readFileSync('meta-chief-of-staff-agent/typecheck.log', 'utf8');
+            const tail = log.split('\n').slice(-140).join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `<!-- meta-chief-typecheck-diagnostic -->\n### TypeScript diagnostic\n\n\`\`\`text\n${tail}\n\`\`\``,
+            });
+
+      - name: Fail on TypeScript error
+        if: steps.typecheck.outcome == 'failure'
+        run: cat typecheck.log && exit 1
 
       - name: Smoke-check Agents SDK graph
         run: npm run sdk:smoke
