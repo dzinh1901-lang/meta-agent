@@ -6,11 +6,28 @@ const { buildTaskPacket, attachApprovalToTaskPacket } = require('./task-packet-b
 const { buildApprovalPacket } = require('./approval-packet-builder');
 const { createAgentRun, createPendingApproval, pauseRunForApproval } = require('./run-state');
 
+function buildBlockedActionRecord({ taskPacket, decision, createdAt }) {
+  const now = createdAt || new Date().toISOString();
+  return {
+    blocked_action_id: `blocked_${taskPacket.task_id}`,
+    task_id: taskPacket.task_id,
+    repository: taskPacket.repository,
+    action_type: taskPacket.action_type,
+    risk_level: decision.risk,
+    reasons: decision.blockReasons || [decision.reason],
+    policy_decision: decision,
+    audit_correlation_id: taskPacket.audit_correlation_id,
+    created_at: now,
+    executable: false,
+    approval_can_override: false
+  };
+}
+
 function buildTaskApprovalWorkflow(input) {
   const registry = input.registry || loadRegistry();
   const actionType = input.actionType || (input.action && input.action.type) || 'create_internal_task_packet';
   const action = input.action || { type: actionType, summary: input.objective };
-  const decision = classifyAction(actionType, input.context || {});
+  const decision = input.policyDecision || classifyAction(actionType, input.context || {});
 
   let taskPacket = buildTaskPacket({
     ...input,
@@ -21,6 +38,7 @@ function buildTaskApprovalWorkflow(input) {
 
   let approvalPacket = null;
   let pendingApproval = null;
+  let blockedAction = null;
   let run = createAgentRun({
     inputSummary: input.objective,
     auditCorrelationId: taskPacket.audit_correlation_id,
@@ -29,7 +47,14 @@ function buildTaskApprovalWorkflow(input) {
     createdAt: input.createdAt
   });
 
-  if (taskPacket.requires_human_approval) {
+  if (decision.blocked) {
+    blockedAction = buildBlockedActionRecord({ taskPacket, decision, createdAt: input.createdAt });
+    run = {
+      ...run,
+      status: 'blocked',
+      outputs: [...run.outputs, { type: 'blocked_action', blocked_action_id: blockedAction.blocked_action_id, reasons: blockedAction.reasons }]
+    };
+  } else if (taskPacket.requires_human_approval) {
     approvalPacket = buildApprovalPacket({
       action,
       decision,
@@ -56,6 +81,12 @@ function buildTaskApprovalWorkflow(input) {
     };
   }
 
+  const nextSteps = decision.blocked
+    ? ['Stop execution. Hard blocks and v1 prohibitions cannot be overridden by an action approval.', 'Escalate only through a reviewed policy change.']
+    : approvalPacket
+      ? ['Pause run until scoped human approval is recorded.', 'Do not execute the gated action before approval.']
+      : ['Task packet is low-risk/read-only and may proceed without approval.'];
+
   return {
     workflow: 'task_approval_packet_generation',
     mode: 'dry-run',
@@ -63,11 +94,10 @@ function buildTaskApprovalWorkflow(input) {
     task_packet: taskPacket,
     approval_packet: approvalPacket,
     pending_approval: pendingApproval,
+    blocked_action: blockedAction,
     agent_run: run,
-    next_steps: approvalPacket
-      ? ['Pause run until scoped human approval is recorded.', 'Do not execute the gated action before approval.']
-      : ['Task packet is low-risk/read-only and may proceed without approval.']
+    next_steps: nextSteps
   };
 }
 
-module.exports = { buildTaskApprovalWorkflow };
+module.exports = { buildBlockedActionRecord, buildTaskApprovalWorkflow };
