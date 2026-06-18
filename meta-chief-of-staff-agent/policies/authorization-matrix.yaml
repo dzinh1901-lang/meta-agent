@@ -1,6 +1,10 @@
-schema_version: 0.1.0
+schema_version: 0.2.0
 default_mode: read_only_until_authorized
 self_approval_allowed: false
+v1_prohibited_actions:
+  - merge_pull_request
+  - trigger_deployment
+  - request_secret_access
 
 roles:
   principal_approver:
@@ -22,10 +26,25 @@ actions:
   read_repository_metadata:
     risk: low
     approvals_required: []
+  read_repository_file:
+    risk: low
+    approvals_required: []
+  search_repository:
+    risk: low
+    approvals_required: []
+  inspect_project_docs:
+    risk: low
+    approvals_required: []
+  compute_project_health:
+    risk: low
+    approvals_required: []
   create_internal_plan:
     risk: low
     approvals_required: []
   create_internal_task_packet:
+    risk: medium
+    approvals_required: []
+  route_to_orchestrator_dry_run:
     risk: medium
     approvals_required: []
   create_github_issue:
@@ -34,9 +53,16 @@ actions:
   create_pull_request_draft:
     risk: high
     approvals_required: [engineering_approver]
+  write_repository_file:
+    risk: high
+    approvals_required: [engineering_approver]
   mutate_code:
     risk: high
     approvals_required: [engineering_approver]
+  merge_pull_request:
+    risk: critical
+    approvals_required: [principal_approver, engineering_approver]
+    prohibited_in_v1: true
   modify_auth_tenant_security:
     risk: critical
     approvals_required: [security_approver, engineering_approver]
@@ -46,6 +72,10 @@ actions:
   deploy_production:
     risk: critical
     approvals_required: [principal_approver, engineering_approver, security_approver]
+  trigger_deployment:
+    risk: critical
+    approvals_required: [principal_approver, engineering_approver, security_approver]
+    prohibited_in_v1: true
   send_external_message:
     risk: high
     approvals_required: [marketing_approver, principal_approver]
@@ -58,15 +88,29 @@ actions:
   procurement_vendor_research:
     risk: medium
     approvals_required: []
+  approve_vendor_shortlist:
+    risk: high
+    approvals_required: [procurement_approver]
   procurement_vendor_award:
     risk: critical
     approvals_required: [procurement_approver, finance_approver, principal_approver]
+  approve_procurement_action:
+    risk: critical
+    approvals_required: [procurement_approver, finance_approver, principal_approver]
+  approve_budget_change:
+    risk: critical
+    approvals_required: [finance_approver, principal_approver]
   contract_or_legal_commitment:
     risk: critical
     approvals_required: [legal_compliance_approver, principal_approver]
   export_customer_or_supplier_data:
     risk: critical
     approvals_required: [security_approver, legal_compliance_approver, principal_approver]
+  request_secret_access:
+    risk: critical
+    approvals_required: [security_approver, principal_approver]
+    default_block: true
+    prohibited_in_v1: true
   regulated_domain_action:
     risk: critical
     approvals_required: [legal_compliance_approver, security_approver, principal_approver]
