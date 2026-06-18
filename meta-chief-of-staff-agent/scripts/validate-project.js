@@ -6,9 +6,11 @@ const path = require('node:path');
 const { classifyAction, summarizePolicy } = require('../src/policy-engine');
 const { evaluateToolGuardrail } = require('../src/guardrails');
 const { validateApprovalDecision } = require('../src/approval-policy');
+const { buildTaskApprovalWorkflow } = require('../src/packet-workflow');
 
 const root = path.join(__dirname, '..');
 const requiredFiles = [
+  'package.json',
   'README.md',
   'PRD.md',
   'ARCHITECTURE.md',
@@ -28,10 +30,19 @@ const requiredFiles = [
   'src/policy-engine.js',
   'src/guardrails.js',
   'src/approval-policy.js',
+  'src/packet-utils.js',
+  'src/task-packet-builder.js',
   'src/approval-packet-builder.js',
+  'src/run-state.js',
+  'src/packet-workflow.js',
   'src/repository-registry.js',
   'src/meta-chief-agent.js',
-  'scripts/run-policy-check.js'
+  'scripts/run-dry-run.js',
+  'scripts/run-policy-check.js',
+  'scripts/run-phase3-demo.js',
+  'scripts/validate-project.js',
+  'tests/phase2-policy.test.js',
+  'tests/phase3-packets.test.js'
 ];
 
 for (const file of requiredFiles) {
@@ -102,9 +113,30 @@ const missingRole = validateApprovalDecision({
 });
 if (missingRole.executable || !missingRole.errors.some((error) => error.includes('engineering_approver'))) throw new Error('Approval validation must reject missing required approver roles.');
 
+const gatedWorkflow = buildTaskApprovalWorkflow({
+  objective: 'Create draft PR for project-health reporting.',
+  repository: 'dzinh1901-lang/aurelean-app',
+  action: { type: 'create_pull_request_draft', summary: 'Create draft PR for project-health reporting.' },
+  actionType: 'create_pull_request_draft',
+  expiresAt: '2999-01-01T00:00:00Z',
+  createdAt: '2026-06-18T00:00:00Z'
+});
+if (!gatedWorkflow.task_packet.task_id || !gatedWorkflow.approval_packet || !gatedWorkflow.pending_approval) throw new Error('Gated workflow must generate task, approval, and pending approval packets.');
+if (gatedWorkflow.task_packet.approval_id !== gatedWorkflow.approval_packet.approval_id) throw new Error('Task packet must link generated approval packet.');
+if (gatedWorkflow.agent_run.status !== 'paused_for_approval') throw new Error('Gated workflow run must pause for approval.');
+
+const readOnlyWorkflow = buildTaskApprovalWorkflow({
+  objective: 'Read repository metadata.',
+  repository: 'dzinh1901-lang/aurelean-app',
+  action: { type: 'read_repository_metadata', summary: 'Read repository metadata.' },
+  actionType: 'read_repository_metadata',
+  createdAt: '2026-06-18T00:00:00Z'
+});
+if (readOnlyWorkflow.approval_packet !== null || readOnlyWorkflow.agent_run.status !== 'completed') throw new Error('Read-only workflow should complete without approval.');
+
 console.log(JSON.stringify({
   ok: true,
-  phase: 'phase_2_policy_enforcement',
+  phase: 'phase_3_task_approval_packets',
   repository_count: registry.repositories.length,
   known_orchestrator_count: known.length,
   agent_definition_count: agentFiles.length,
@@ -121,6 +153,9 @@ console.log(JSON.stringify({
     'merge_pr_prohibited',
     'public_marketing_guarded',
     'scoped_approval_allows_issue_creation',
-    'missing_approver_role_rejected'
+    'missing_approver_role_rejected',
+    'gated_workflow_generates_task_approval_pending_queue',
+    'gated_workflow_pauses_run',
+    'read_only_workflow_completes_without_approval'
   ]
 }, null, 2));
