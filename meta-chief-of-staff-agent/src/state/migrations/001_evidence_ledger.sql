@@ -80,6 +80,14 @@ create table if not exists procurement_workflows (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists backup_plans (
+  id text primary key,
+  backup_plan_id text generated always as (value->>'backup_plan_id') stored,
+  value jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists audit_events (
   id text primary key,
   value jsonb not null,
@@ -100,3 +108,4 @@ create index if not exists idx_approval_queues_approval_id on approval_queues (a
 create index if not exists idx_approval_decisions_approval_id on approval_decisions (approval_id);
 create index if not exists idx_approval_decisions_queue_id on approval_decisions (queue_id);
 create index if not exists idx_agent_runs_run_id on agent_runs (run_id);
+create index if not exists idx_backup_plans_backup_plan_id on backup_plans (backup_plan_id);
