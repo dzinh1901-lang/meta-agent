@@ -2,14 +2,15 @@
 
 ## Status
 
-Phase 2 now implements deterministic policy enforcement for the Meta Chief of Staff Agent scaffold.
+Phase 2 implements deterministic policy enforcement for the Meta Chief of Staff Agent scaffold.
 
-## Added modules
+## Runtime modules
 
-- `src/policy-engine.js`
-- `src/guardrails.js`
-- `src/approval-policy.js`
-- `scripts/run-policy-check.js`
+- `src/policy-engine.js` defines risk levels, approver roles, action taxonomy, v1-prohibited actions, hard blocks, and policy decisions.
+- `src/approval-policy.js` validates whether a human approval decision is present, scoped, role-complete, unexpired, and executable.
+- `src/guardrails.js` evaluates whether a tool call is allowed, blocked, or paused for human approval.
+- `scripts/run-policy-check.js` prints representative decisions and guardrail results.
+- `tests/phase2-policy.test.js` provides deterministic policy assertions without external services.
 
 ## Commands
 
@@ -17,6 +18,7 @@ Phase 2 now implements deterministic policy enforcement for the Meta Chief of St
 cd meta-chief-of-staff-agent
 npm run validate
 npm run policy:check
+npm run test:phase2
 npm run phase2
 ```
 
@@ -62,11 +64,14 @@ Blocked or paused cases:
 
 `validateApprovalDecision()` checks:
 
-- approval exists
-- status is approved
+- approval exists when the action requires approval
+- status is `approved`
 - approval is not expired
 - approval covers the requested action
 - approval includes every required approver role
+- approval cannot override hard blocks or v1-prohibited actions
+
+Read-only actions do not need approval and remain executable without a decision packet.
 
 ## Phase 3 handoff
 
