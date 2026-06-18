@@ -111,14 +111,31 @@ function classifyAction(actionType, context = {}) {
   };
 }
 
+function approvalActions(approval) {
+  if (!approval) return [];
+  return unique([
+    ...(Array.isArray(approval.approved_actions) ? approval.approved_actions : []),
+    ...(approval.action_type ? [approval.action_type] : [])
+  ]);
+}
+
+function approvalRoles(approval) {
+  if (!approval || approval.status !== 'approved') return [];
+  return unique([
+    ...(Array.isArray(approval.approver_roles) ? approval.approver_roles : []),
+    ...(Array.isArray(approval.approved_by_roles) ? approval.approved_by_roles : []),
+    ...(Array.isArray(approval.required_approver_roles) ? approval.required_approver_roles : [])
+  ]);
+}
+
 function approvalCoversAction(decision, approval = null, scope = {}) {
   if (!approval || approval.status !== 'approved' || decision.blocked) return false;
   if (typeof approval.expires_at !== 'string') return false;
   const expiryMs = Date.parse(approval.expires_at);
   if (Number.isNaN(expiryMs) || expiryMs <= Date.now()) return false;
-  if (!Array.isArray(approval.approved_actions) || !approval.approved_actions.includes(decision.actionType)) return false;
+  if (!approvalActions(approval).includes(decision.actionType)) return false;
   const required = decision.approvals || [];
-  const approvedRoles = approval.approver_roles || [];
+  const approvedRoles = approvalRoles(approval);
   if (!required.every((role) => approvedRoles.includes(role))) return false;
 
   const constraints = approval.constraints || {};
@@ -157,4 +174,4 @@ function summarizePolicy() {
   };
 }
 
-module.exports = { RISK_LEVELS, APPROVER_ROLES, ACTIONS, HARD_BLOCKS, classifyAction, approvalCoversAction, requireApprovalPacket, assertAllowed, summarizePolicy };
+module.exports = { RISK_LEVELS, APPROVER_ROLES, ACTIONS, HARD_BLOCKS, classifyAction, approvalActions, approvalRoles, approvalCoversAction, requireApprovalPacket, assertAllowed, summarizePolicy };
