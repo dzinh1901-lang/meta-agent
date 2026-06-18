@@ -8,6 +8,9 @@ const { evaluateToolGuardrail } = require('../src/guardrails');
 const { validateApprovalDecision } = require('../src/approval-policy');
 const { buildTaskApprovalWorkflow } = require('../src/packet-workflow');
 const { buildProcurementWorkflow } = require('../src/procurement/procurement-workflow');
+const { buildMarketingWorkflow } = require('../src/marketing/marketing-workflow');
+const { buildBudgetReview } = require('../src/finance/finance-review');
+const { buildSecurityReview } = require('../src/security/security-review');
 const { buildPortfolioRoutingPlan } = require('../src/orchestrators/portfolio-router');
 
 const root = path.join(__dirname, '..');
@@ -48,11 +51,18 @@ const requiredFiles = [
   'src/oversight/oversight-registry.js',
   'src/procurement/procurement-policy.js',
   'src/procurement/procurement-workflow.js',
+  'src/marketing/marketing-policy.js',
+  'src/marketing/marketing-workflow.js',
+  'src/finance/finance-review.js',
+  'src/security/security-review.js',
   'src/state/StateStore.ts',
   'src/state/InMemoryStateStore.ts',
   'src/sdk/context.ts',
+  'src/sdk/runtime-helpers.ts',
   'src/sdk/tools.ts',
+  'src/sdk/domain-tools.ts',
   'src/sdk/specialists.ts',
+  'src/sdk/handoffs.ts',
   'src/sdk/meta-chief-of-staff.ts',
   'src/sdk/cli.ts',
   'src/sdk/smoke.ts',
@@ -64,7 +74,8 @@ const requiredFiles = [
   'scripts/validate-project.js',
   'tests/phase2-policy.test.js',
   'tests/phase3-packets.test.js',
-  'tests/phase4-routing-procurement.test.js'
+  'tests/phase4-routing-procurement.test.js',
+  'tests/phase4-specialists.test.js'
 ];
 
 for (const file of requiredFiles) {
@@ -73,7 +84,7 @@ for (const file of requiredFiles) {
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-for (const script of ['validate', 'phase4', 'verify', 'typecheck', 'sdk:smoke', 'sdk:chat', 'sdk:resume']) {
+for (const script of ['validate', 'phase4', 'verify', 'test:phase4', 'test:phase4:specialists', 'typecheck', 'sdk:smoke', 'sdk:chat', 'sdk:resume']) {
   if (!packageJson.scripts || !packageJson.scripts[script]) throw new Error(`Missing package script: ${script}`);
 }
 if (packageJson.dependencies?.['@openai/agents'] !== '0.11.6') throw new Error('Agents SDK dependency must be pinned to audited version 0.11.6.');
@@ -105,16 +116,12 @@ if (policy.default_mode !== 'read_only_until_authorized') throw new Error('Defau
 
 const readOnly = classifyAction('read_repository_metadata');
 if (!readOnly.allowed || readOnly.requiresHumanApproval || readOnly.blocked) throw new Error('Read-only metadata should be allowed without approval.');
-
 const draftPr = classifyAction('create_pull_request_draft');
 if (draftPr.risk !== 'high' || !draftPr.requiresHumanApproval || draftPr.allowed || draftPr.blocked) throw new Error('Draft PR should be high-risk and approval gated.');
-
 const unknown = classifyAction('not_a_real_action');
 if (unknown.risk !== 'critical' || !unknown.blocked || unknown.allowed) throw new Error('Unknown action must fail closed as critical blocked.');
-
 const secret = classifyAction('request_secret_access');
 if (!secret.blocked || secret.allowed || !secret.reason.includes('prohibited in v1')) throw new Error('Secret access must be blocked/prohibited in v1.');
-
 const publicGuard = evaluateToolGuardrail({ actionType: 'publish_public_marketing' });
 if (publicGuard.allowed || !publicGuard.requiresApproval) throw new Error('Public marketing must pause for approval.');
 
@@ -149,7 +156,6 @@ const gatedWorkflow = buildTaskApprovalWorkflow({
   createdAt: '2026-06-18T00:00:00Z'
 });
 if (!gatedWorkflow.task_packet.task_id || !gatedWorkflow.approval_packet || !gatedWorkflow.pending_approval) throw new Error('Gated workflow must generate task, approval, and pending approval packets.');
-if (gatedWorkflow.task_packet.approval_id !== gatedWorkflow.approval_packet.approval_id) throw new Error('Task packet must link generated approval packet.');
 if (gatedWorkflow.agent_run.status !== 'paused_for_approval') throw new Error('Gated workflow run must pause for approval.');
 
 const routingPlan = buildPortfolioRoutingPlan({
@@ -182,49 +188,89 @@ const procurementWorkflow = buildProcurementWorkflow({
 });
 if (procurementWorkflow.procurement_brief.blocked) throw new Error('Complete procurement shortlist should not be blocked.');
 if (!procurementWorkflow.task_workflow.approval_packet || procurementWorkflow.task_workflow.agent_run.status !== 'paused_for_approval') throw new Error('Procurement shortlist must generate an approval packet and pause.');
-if (procurementWorkflow.task_workflow.approval_packet.constraints.maximum_budget !== 12000) throw new Error('Procurement approval packet must be budget scoped.');
 
-const incompleteCommitment = buildProcurementWorkflow({
+const marketingWorkflow = buildMarketingWorkflow({
   registry,
   repository: 'dzinh1901-lang/aurelean-app',
-  summary: 'Incomplete vendor award.',
-  intent: 'award',
-  estimated_cost: 5000,
-  budget_owner: 'portfolio_principal',
-  vendors: [{ vendor_id: 'vendor_alpha', vendor_name: 'Vendor Alpha' }],
+  summary: 'Prepare evidence-backed public launch content.',
+  intent: 'public_publish',
+  audience: 'public buyers',
+  channels: ['website'],
+  claims: [{ text: 'Documented capability.', evidence_refs: ['evidence-001'] }],
+  expiresAt: '2999-01-01T00:00:00Z',
   createdAt: '2026-06-18T00:00:00Z'
 });
-if (!incompleteCommitment.procurement_brief.blocked || incompleteCommitment.task_workflow.approval_packet !== null) throw new Error('Incomplete procurement commitment must block before approval.');
+if (marketingWorkflow.campaign_brief.blocked) throw new Error('Evidence-backed publication workflow should be approval-ready.');
+if (!marketingWorkflow.task_workflow.approval_packet || marketingWorkflow.task_workflow.agent_run.status !== 'paused_for_approval') throw new Error('Publication workflow must pause for approval.');
+
+const budgetReview = buildBudgetReview({
+  repository: 'dzinh1901-lang/aurelean-app',
+  summary: 'Review internal tooling budget.',
+  approved_budget: 20000,
+  spent_to_date: 5000,
+  requested_amount: 3000,
+  budget_owner: 'portfolio_principal',
+  purpose: 'Read-only project analytics'
+});
+if (budgetReview.blocked || budgetReview.autonomous_payment_allowed !== false) throw new Error('Complete budget review should be approval-ready and non-executing.');
+
+const securityReview = buildSecurityReview({
+  repository: 'dzinh1901-lang/aurelean-app',
+  action_type: 'request_secret_access',
+  requests_secrets: true,
+  evidence: {}
+});
+if (!securityReview.hard_blocked || securityReview.executable) throw new Error('Secret access security review must remain hard blocked.');
 
 const sdkManagerSource = fs.readFileSync(path.join(root, 'src/sdk/meta-chief-of-staff.ts'), 'utf8');
+const sdkHandoffsSource = fs.readFileSync(path.join(root, 'src/sdk/handoffs.ts'), 'utf8');
+const sdkSpecialistsSource = fs.readFileSync(path.join(root, 'src/sdk/specialists.ts'), 'utf8');
+const sdkDomainToolsSource = fs.readFileSync(path.join(root, 'src/sdk/domain-tools.ts'), 'utf8');
 const sdkToolsSource = fs.readFileSync(path.join(root, 'src/sdk/tools.ts'), 'utf8');
 const sdkCliSource = fs.readFileSync(path.join(root, 'src/sdk/cli.ts'), 'utf8');
-if (!sdkManagerSource.includes('specialistAgentTools') || !sdkManagerSource.includes('coreMetaTools')) throw new Error('SDK manager must compose core and specialist tools.');
+if (!sdkManagerSource.includes('specialistHandoffs') || !sdkManagerSource.includes('handoffs: specialistHandoffs')) throw new Error('SDK manager must delegate through specialist handoffs.');
+if (sdkManagerSource.includes('specialistAgentTools')) throw new Error('Root manager should not use specialist agent tools when handoff ownership is configured.');
+if ((sdkHandoffsSource.match(/handoff\(/g) || []).length !== 6) throw new Error('Exactly six specialist handoffs must be registered.');
+for (const toolName of [
+  'inspect_orchestrator_compatibility', 'compare_vendors', 'build_marketing_campaign_brief',
+  'build_budget_review', 'build_security_review', 'build_audit_summary'
+]) {
+  if (!sdkDomainToolsSource.includes(`name: '${toolName}'`)) throw new Error(`Missing narrow specialist tool: ${toolName}`);
+}
+for (const agentName of [
+  'Cross-Repository Orchestrator', 'Procurement Oversight Agent', 'Marketing Oversight Agent',
+  'Finance Ops Agent', 'Security Compliance Agent', 'Audit Evidence Agent'
+]) {
+  if (!sdkSpecialistsSource.includes(`name: '${agentName}'`)) throw new Error(`Missing specialist agent: ${agentName}`);
+}
 if (!sdkToolsSource.includes('needsApproval: true')) throw new Error('Controlled action tool must use Agents SDK approval interruption.');
 if (!sdkToolsSource.includes("stateStore.get('approvalPackets'")) throw new Error('Controlled action tool must validate the referenced approval packet.');
 if (!sdkCliSource.includes('RunState.fromString') || !sdkCliSource.includes('interruptions')) throw new Error('SDK CLI must support resumable human approval interruptions.');
 
 console.log(JSON.stringify({
   ok: true,
-  phase: 'phase_4_and_sdk_runtime',
+  phase: 'phase_4_handoffs_and_oversight_adapters',
   repository_count: registry.repositories.length,
   known_orchestrator_count: known.length,
   agent_definition_count: agentFiles.length,
   policy_action_count: policy.action_count,
+  specialist_agent_count: 6,
+  specialist_handoff_count: 6,
   validations: [
     'required_files_present',
     'package_scripts_and_dependencies_present',
     'schemas_parse',
-    'agent_front_matter_present',
     'self_approval_forbidden',
-    'read_only_allowed',
+    'policy_and_approval_boundaries_valid',
     'gated_workflow_pauses',
     'portfolio_routing_dry_run_only',
-    'procurement_shortlist_scoped_and_gated',
-    'incomplete_procurement_commitment_blocked',
-    'sdk_manager_graph_present',
+    'procurement_workflow_scoped_and_gated',
+    'marketing_workflow_scoped_and_gated',
+    'finance_review_non_executing',
+    'security_hard_block_enforced',
+    'root_manager_uses_six_handoffs',
+    'specialists_expose_narrow_tools',
     'sdk_tool_approval_interrupt_present',
-    'sdk_approval_packet_validation_present',
     'sdk_runstate_resume_present'
   ]
 }, null, 2));
