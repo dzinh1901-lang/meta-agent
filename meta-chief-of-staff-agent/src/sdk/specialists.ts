@@ -5,6 +5,8 @@ import {
   buildProcurementWorkflowTool,
   buildTaskWorkflowTool,
   classifyActionTool,
+  createDraftPRTool,
+  createGitHubIssueTool,
   getPolicySummaryTool,
   getPortfolioRegistryTool,
   queueControlledActionTool,
@@ -31,7 +33,14 @@ Route repository work through the local orchestrator. Unknown orchestrator means
 For multi-repository work, build one bounded task workflow per repository and synthesize the result.
 ${sharedBoundary}
 `.trim(),
-  tools: [getPortfolioRegistryTool, classifyActionTool, buildTaskWorkflowTool, buildPortfolioRoutingPlanTool],
+  tools: [
+    getPortfolioRegistryTool,
+    classifyActionTool,
+    buildTaskWorkflowTool,
+    buildPortfolioRoutingPlanTool,
+    createGitHubIssueTool,
+    createDraftPRTool,
+  ],
 });
 
 export const procurementOversightAgent = new Agent<MetaAgentContext>({
