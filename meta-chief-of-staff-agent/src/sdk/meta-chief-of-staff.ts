@@ -1,5 +1,4 @@
 import { Agent } from '@openai/agents';
-import type { MetaAgentContext } from './context.js';
 import { specialistHandoffs } from './handoffs.js';
 import { coreMetaTools } from './tools.js';
 import { DEFAULT_MODEL } from './specialists.js';
@@ -33,7 +32,7 @@ Preferred response structure:
 4. Next controlled action
 `.trim();
 
-export const metaChiefOfStaffAgent = Agent.create<MetaAgentContext>({
+export const metaChiefOfStaffAgent = Agent.create({
   name: 'Meta Chief of Staff Agent',
   model: DEFAULT_MODEL,
   instructions: managerInstructions,
