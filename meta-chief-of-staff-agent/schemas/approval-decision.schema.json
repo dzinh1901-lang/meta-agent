@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApprovalDecision",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "approval_id",
+    "decision_type",
+    "approver_role",
+    "decided_at",
+    "constraints",
+    "notes"
+  ],
+  "properties": {
+    "decision_id": { "type": "string" },
+    "approval_id": { "type": "string" },
+    "queue_id": { "type": ["string", "null"] },
+    "decision_type": { "enum": ["approve_once", "approve_with_limits", "reject", "request_changes", "always_reject"] },
+    "approver_role": { "type": "string" },
+    "decided_at": { "type": "string", "format": "date-time" },
+    "constraints": { "type": "object" },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}
