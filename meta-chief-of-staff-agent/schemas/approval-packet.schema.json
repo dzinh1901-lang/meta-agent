@@ -11,75 +11,54 @@
     "requesting_agent",
     "required_approver_roles",
     "evidence_bundle",
+    "evidence_hash",
+    "expected_outcome",
     "rollback_plan",
+    "constraints",
     "expires_at",
-    "decision_options"
+    "created_at",
+    "status",
+    "decision_options",
+    "requested_authority",
+    "risk_reason",
+    "block_reasons",
+    "audit_correlation_id"
   ],
   "properties": {
-    "approval_id": {
-      "type": "string"
-    },
-    "requested_action": {
-      "type": "string"
-    },
-    "action_type": {
-      "type": "string"
-    },
-    "risk_level": {
-      "enum": [
-        "low",
-        "medium",
-        "high",
-        "critical"
-      ]
-    },
-    "affected_repositories": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "requesting_agent": {
-      "type": "string"
-    },
-    "required_approver_roles": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "evidence_bundle": {
-      "type": "object"
-    },
-    "expected_outcome": {
-      "type": "string"
-    },
-    "rollback_plan": {
-      "type": "string"
-    },
-    "constraints": {
-      "type": "object"
-    },
-    "cost_impact": {
-      "type": "number"
-    },
-    "customer_supplier_impact": {
-      "type": "string"
-    },
-    "expires_at": {
-      "type": "string"
-    },
+    "approval_id": { "type": "string", "minLength": 1 },
+    "requested_action": { "type": "string", "minLength": 1 },
+    "action_type": { "type": "string", "minLength": 1 },
+    "risk_level": { "enum": ["low", "medium", "high", "critical"] },
+    "affected_repositories": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "requesting_agent": { "type": "string", "minLength": 1 },
+    "required_approver_roles": { "type": "array", "items": { "type": "string" } },
+    "evidence_bundle": { "type": "object" },
+    "evidence_hash": { "type": "string", "minLength": 32 },
+    "expected_outcome": { "type": "string", "minLength": 1 },
+    "rollback_plan": { "type": "string", "minLength": 1 },
+    "constraints": { "type": "object" },
+    "cost_impact": { "type": ["number", "null"] },
+    "customer_supplier_impact": { "type": "string" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["pending", "approved", "rejected", "expired", "changes_requested"] },
     "decision_options": {
       "type": "array",
-      "items": {
-        "enum": [
-          "approve_once",
-          "approve_with_limits",
-          "reject",
-          "request_changes",
-          "always_reject"
-        ]
-      }
-    }
-  }
+      "items": { "enum": ["approve_once", "approve_with_limits", "reject", "request_changes", "always_reject"] }
+    },
+    "requested_authority": {
+      "type": "object",
+      "required": ["category", "effect", "requires_human_approval"],
+      "properties": {
+        "category": { "type": "string" },
+        "effect": { "type": "string" },
+        "requires_human_approval": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "risk_reason": { "type": "string" },
+    "block_reasons": { "type": "array", "items": { "type": "string" } },
+    "audit_correlation_id": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
 }
