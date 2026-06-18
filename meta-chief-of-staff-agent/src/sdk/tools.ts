@@ -69,6 +69,160 @@ function queueStatusToApprovalPacketStatus(decisionType: string): string {
   return 'approved';
 }
 
+function buildIssuePayload(input: {
+  repository: string;
+  title: string;
+  body: string;
+  labels: string[];
+  assignees: string[];
+  environment: string;
+}) {
+  return {
+    destination: 'github_issue',
+    repository: input.repository,
+    title: input.title,
+    body: input.body,
+    labels: input.labels,
+    assignees: input.assignees,
+    metadata: {
+      environment: input.environment,
+      delivery_mode: 'write-gated-stub',
+      prepared_at: new Date().toISOString(),
+    },
+    stub: true,
+    api_call: 'createIssue',
+  };
+}
+
+function buildDraftPrPayload(input: {
+  repository: string;
+  title: string;
+  body: string;
+  baseBranch: string;
+  headBranch: string;
+  environment: string;
+  reviewers: string[];
+  labels: string[];
+}) {
+  return {
+    destination: 'github_pull_request',
+    repository: input.repository,
+    title: input.title,
+    body: input.body,
+    base: input.baseBranch,
+    head: input.headBranch,
+    reviewers: input.reviewers,
+    labels: input.labels,
+    metadata: {
+      environment: input.environment,
+      delivery_mode: 'write-gated-stub',
+      draft: true,
+      prepared_at: new Date().toISOString(),
+    },
+    stub: true,
+    api_call: 'createDraftPullRequest',
+  };
+}
+
+async function requireSignedApproverRoleForWrite(context: MetaAgentContext, args: {
+  approvalId: string;
+  approverRole: string;
+  queueId?: string;
+  runId?: string;
+}) {
+  const [approvalRows, queueRows, decisionRows] = await Promise.all([
+    context.stateStore.get('approvalPackets', args.approvalId),
+    context.stateStore.list('approvalQueues'),
+    context.stateStore.list('approvalDecisions'),
+  ]);
+
+  if (!approvalRows) throw new Error(`Approval packet not found for approvalId=${args.approvalId}.`);
+  const approval = getRecord(approvalRows.value);
+  const validApprover = approval.required_approver_roles?.includes(args.approverRole);
+  if (!validApprover) {
+    throw new Error(`Approver role '${args.approverRole}' is not authorized for approval ${args.approvalId}.`);
+  }
+
+  const queue = args.queueId
+    ? queueRows.find((row) => row.id === args.queueId)
+    : queueRows.find((row) => getRecord(row.value).approval_id === args.approvalId);
+  if (!queue) throw new Error(`Approval queue not found for approvalId=${args.approvalId}.`);
+
+  const queueValue = getRecord(queue.value);
+  const queueStatus = queueValue.status;
+  if (queueStatus === 'approved' && (typeof args.runId === 'undefined' || !args.runId || queueValue.run_id === args.runId || !queueValue.run_id)) {
+    const decision = decisionRows
+      .map((record) => getRecord(record.value))
+      .find((candidate) =>
+        candidate.approval_id === args.approvalId &&
+        candidate.approver_role === args.approverRole &&
+        ['approve_once', 'approve_with_limits'].includes(candidate.decision_type) &&
+        candidate.queue_id === queue.id
+      );
+    if (decision) return { queue: queueValue, approval, queueRecordId: queue.id };
+  }
+
+  if (queueStatus === 'approved') {
+    throw new Error(`Approval packet ${args.approvalId} has not been approved by '${args.approverRole}'.`);
+  }
+  if (queueStatus === 'pending') {
+    throw new Error(`Approval packet ${args.approvalId} is still pending for role '${args.approverRole}'.`);
+  }
+  if (queueStatus === 'rejected' || queueStatus === 'changes_requested' || queueStatus === 'expired') {
+    throw new Error(`Approval packet ${args.approvalId} cannot be executed from status: ${queueStatus}.`);
+  }
+  throw new Error(`Approval packet ${args.approvalId} is not executable in current queue state: ${queueStatus}.`);
+}
+
+async function buildWriteWorkflow(context: MetaAgentContext, input: {
+  repository: string;
+  actionType: 'create_github_issue' | 'create_pull_request_draft';
+  objective: string;
+  writePayload: ReturnType<typeof buildIssuePayload> | ReturnType<typeof buildDraftPrPayload>;
+  runId?: string;
+}) {
+  const workflow = buildTaskApprovalWorkflow({
+    registry: context.registry,
+    objective: input.objective,
+    repository: input.repository,
+    action: { type: input.actionType, summary: input.objective },
+    actionType: input.actionType,
+    context: {},
+    validationRequirements: ['human approval before write execution'],
+    requestedOutputs: ['write_payload', 'approval_packet', 'approved_run_status'],
+    evidenceBundle: { source: 'write_gate_stub', task_type: input.actionType, policy_version: '0.2.0' },
+    expectedOutcome: `Prepare ${input.actionType} payload for ${input.repository} without API call until Stage 6.`,
+    rollbackPlan: 'No external mutation occurs at this stage; discard stub and replay from new approval token if needed.',
+    createdAt: new Date().toISOString(),
+    costImpact: null,
+    customerSupplierImpact: null,
+  });
+
+  await persistWorkflow(context, workflow);
+  const task = workflow.task_packet as Record<string, any> | undefined;
+  const approval = workflow.approval_packet as Record<string, any> | null | undefined;
+  const queue = workflow.pending_approval as Record<string, any> | null | undefined;
+  const run = workflow.agent_run as Record<string, any> | undefined;
+
+  if (!run?.run_id) throw new Error('Unable to initialize run state for gated write action.');
+  const runAwarePayload = { ...input.writePayload, metadata: { ...(input.writePayload as any).metadata, run_id: run.run_id } };
+
+  return {
+    mode: 'write-gated-stub',
+    task_packet: task,
+    approval_packet: approval,
+    pending_approval: queue,
+    agent_run: run,
+    write_payload: runAwarePayload,
+    execution_plan: {
+      status: queue?.status ?? 'not_queued',
+      reason: approval ? 'Approval required before execution.' : 'No approval required by policy.',
+      run_id: run.run_id,
+      execute_mode: 'stub-only',
+    },
+  };
+}
+
 async function writeDecisionAndUpdateRun(
   context: MetaAgentContext,
   input: {
@@ -157,14 +311,132 @@ async function writeDecisionAndUpdateRun(
     recorded_at: new Date().toISOString(),
   });
 
-  return {
-    decision_record: decisionRecord,
-    queue: updatedQueue,
-    run: updatedRun,
-    evidence_event_id: evidenceId,
-    audit_event_id: auditId,
-  };
-}
+    return {
+      decision_record: decisionRecord,
+      queue: updatedQueue,
+      run: updatedRun,
+      evidence_event_id: evidenceId,
+      audit_event_id: auditId,
+    };
+  }
+
+export const createGitHubIssueTool = tool({
+  name: 'create_github_issue',
+  description: 'Prepare a GitHub issue write payload and approval packet, but do not call GitHub API until Stage 6.',
+  parameters: z.object({
+    repository: z.string().min(1),
+    title: z.string().min(1),
+    body: z.string().default(''),
+    labels: z.array(z.string()).default([]),
+    assignees: z.array(z.string()).default([]),
+    environment: z.string().default('non-production'),
+    runId: z.string().optional(),
+    approvalId: z.string().optional(),
+    queueId: z.string().optional(),
+    approverRole: z.string().optional(),
+  }),
+  needsApproval: true,
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    requireAuthorizedRepository(context, args.repository);
+    const payload = buildIssuePayload({
+      repository: args.repository,
+      title: args.title,
+      body: args.body,
+      labels: args.labels,
+      assignees: args.assignees,
+      environment: args.environment,
+    });
+
+    const plan = await buildWriteWorkflow(context, {
+      repository: args.repository,
+      actionType: 'create_github_issue',
+      objective: `Create issue: ${args.title}`,
+      writePayload: payload,
+      runId: args.runId,
+    });
+
+    const isPending = plan.execution_plan.status === 'pending';
+    if (args.approvalId && args.approverRole) {
+      await requireSignedApproverRoleForWrite(context, {
+        approvalId: args.approvalId,
+        approverRole: args.approverRole,
+        queueId: args.queueId,
+        runId: plan.agent_run?.run_id,
+      });
+    }
+
+    return {
+      ...plan,
+      write_tool: 'create_github_issue',
+      prepared_for_stage6: true,
+      write_enabled: false,
+      ready_for_hand_off: !isPending,
+      note: isPending
+        ? 'Writes are intentionally disabled in Stage 6 groundwork; execution remains gated by approval and run state.'
+        : 'Write tool payload is prepared and signed off by role, but API call is intentionally disabled until Stage 6.',
+    };
+  },
+});
+
+export const createDraftPRTool = tool({
+  name: 'create_draft_pr',
+  description: 'Prepare a draft PR payload and approval packet, but do not call GitHub API until Stage 6.',
+  parameters: z.object({
+    repository: z.string().min(1),
+    title: z.string().min(1),
+    body: z.string().default(''),
+    baseBranch: z.string().default('main'),
+    headBranch: z.string().min(1),
+    reviewers: z.array(z.string()).default([]),
+    labels: z.array(z.string()).default([]),
+    environment: z.string().default('non-production'),
+    runId: z.string().optional(),
+    approvalId: z.string().optional(),
+    queueId: z.string().optional(),
+    approverRole: z.string().optional(),
+  }),
+  needsApproval: true,
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    requireAuthorizedRepository(context, args.repository);
+    const payload = buildDraftPrPayload({
+      repository: args.repository,
+      title: args.title,
+      body: args.body,
+      baseBranch: args.baseBranch,
+      headBranch: args.headBranch,
+      reviewers: args.reviewers,
+      labels: args.labels,
+      environment: args.environment,
+    });
+
+    const plan = await buildWriteWorkflow(context, {
+      repository: args.repository,
+      actionType: 'create_pull_request_draft',
+      objective: `Create draft PR: ${args.title}`,
+      writePayload: payload,
+      runId: args.runId,
+    });
+
+    if (args.approvalId && args.approverRole) {
+      await requireSignedApproverRoleForWrite(context, {
+        approvalId: args.approvalId,
+        approverRole: args.approverRole,
+        queueId: args.queueId,
+        runId: plan.agent_run?.run_id,
+      });
+    }
+
+    return {
+      ...plan,
+      write_tool: 'create_draft_pr',
+      prepared_for_stage6: true,
+      write_enabled: false,
+      note: 'Writes are intentionally disabled in Phase 6 groundwork; API call is still disabled until Stage 6 production routing.',
+    };
+  },
+});
 
 async function persistWorkflow(context: MetaAgentContext, workflow: Record<string, any>): Promise<void> {
   const task = workflow.task_packet as Record<string, any> | undefined;
@@ -430,5 +702,7 @@ export const coreMetaTools = [
   buildPortfolioRoutingPlanTool,
   buildProcurementWorkflowTool,
   queueControlledActionTool,
+  createGitHubIssueTool,
+  createDraftPRTool,
   recordDecisionTool,
 ];
