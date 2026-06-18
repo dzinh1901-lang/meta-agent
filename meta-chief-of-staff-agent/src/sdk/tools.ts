@@ -15,6 +15,18 @@ const { buildPortfolioRoutingPlan } = require('../orchestrators/portfolio-router
 const { buildProcurementWorkflow } = require('../procurement/procurement-workflow.js') as {
   buildProcurementWorkflow: (input: Record<string, unknown>) => Record<string, any>;
 };
+const { recordApprovalDecision, applyApprovalDecision, resumeRunFromApprovalQueue } = require('../run-state.js') as {
+  recordApprovalDecision: (input: {
+    pendingApproval: Record<string, any>;
+    decisionType: string;
+    approverRole: string;
+    decidedAt?: string;
+    constraints?: Record<string, unknown>;
+    notes?: string;
+  }) => Record<string, any>;
+  applyApprovalDecision: (pendingApproval: Record<string, any>, decisionRecord: Record<string, any>) => Record<string, any>;
+  resumeRunFromApprovalQueue: (run: Record<string, any>, approvalQueue: Record<string, any>) => Record<string, any>;
+};
 const { stableId } = require('../packet-utils.js') as {
   stableId: (prefix: string, payload: unknown) => string;
 };
@@ -40,6 +52,118 @@ function requireAuthorizedRepository(context: MetaAgentContext, repository: stri
   if (!context.authorizedRepositories.includes(repository)) {
     throw new Error(`Repository is outside the authorized portfolio scope: ${repository}`);
   }
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getRecord(value: unknown): Record<string, any> {
+  if (!isRecord(value)) throw new Error('Stored state value is malformed.');
+  return value;
+}
+
+function queueStatusToApprovalPacketStatus(decisionType: string): string {
+  if (decisionType === 'reject' || decisionType === 'always_reject') return 'rejected';
+  if (decisionType === 'request_changes') return 'changes_requested';
+  return 'approved';
+}
+
+async function writeDecisionAndUpdateRun(
+  context: MetaAgentContext,
+  input: {
+    approvalId: string;
+    runId?: string;
+    queueId?: string;
+    decisionType: 'approve_once' | 'approve_with_limits' | 'reject' | 'request_changes' | 'always_reject';
+    approverRole: string;
+    constraints?: Record<string, unknown>;
+    notes?: string;
+    decidedAt?: string;
+  }
+) {
+  const queuedRows = await context.stateStore.list('approvalQueues');
+  const queueRecord = input.queueId
+    ? queuedRows.find((row) => row.id === input.queueId)
+    : queuedRows.find((row) => getRecord(row.value).approval_id === input.approvalId);
+  if (!queueRecord) {
+    throw new Error(`Approval queue not found for approval_id=${input.approvalId}.`);
+  }
+
+  const queue = getRecord(queueRecord.value);
+  if (!queue.approval_id || queue.approval_id !== input.approvalId) {
+    throw new Error(`Approval queue does not match approval_id=${input.approvalId}.`);
+  }
+
+  const decisionRecord = recordApprovalDecision({
+    pendingApproval: queue,
+    decisionType: input.decisionType,
+    approverRole: input.approverRole,
+    decidedAt: input.decidedAt,
+    constraints: input.constraints,
+    notes: input.notes,
+  });
+
+  const updatedQueue = applyApprovalDecision(queue, decisionRecord);
+  await context.stateStore.put('approvalDecisions', decisionRecord.decision_id, {
+    ...decisionRecord,
+    operator_id: context.operatorId,
+  });
+  await context.stateStore.put('approvalQueues', queueRecord.id, updatedQueue);
+
+  const runId = input.runId ?? queue.run_id;
+  let runRecord = runId ? await context.stateStore.get('agentRuns', runId) : null;
+  let updatedRun = null;
+  if (runRecord) {
+    const run = getRecord(runRecord.value);
+    updatedRun = resumeRunFromApprovalQueue(run, updatedQueue);
+    await context.stateStore.put('agentRuns', runRecord.id, updatedRun);
+  }
+
+  const approvalRecord = await context.stateStore.get('approvalPackets', input.approvalId);
+  if (approvalRecord) {
+    const approval = getRecord(approvalRecord.value);
+    approval.status = queueStatusToApprovalPacketStatus(input.decisionType);
+    await context.stateStore.put('approvalPackets', input.approvalId, approval);
+  }
+
+  const evidenceId = stableId('evidence', {
+    approval_id: input.approvalId,
+    decision_type: input.decisionType,
+    approver_role: input.approverRole,
+  });
+  await context.stateStore.put('evidenceEvents', evidenceId, {
+    event_type: 'approval_decision_recorded',
+    approval_id: input.approvalId,
+    queue_id: queueRecord.id,
+    run_id: runId ?? null,
+    decision_id: decisionRecord.decision_id,
+    decision_type: input.decisionType,
+    approver_role: input.approverRole,
+    decided_at: decisionRecord.decided_at,
+    evidence_correlation_id: queueRecord.id,
+  });
+
+  const auditId = stableId('audit', { approval_id: input.approvalId, decision_id: decisionRecord.decision_id });
+  await context.stateStore.put('auditEvents', auditId, {
+    event_type: 'approval_decision',
+    approval_id: input.approvalId,
+    queue_id: queueRecord.id,
+    run_id: runId ?? null,
+    decision_id: decisionRecord.decision_id,
+    decision_type: input.decisionType,
+    approver_role: input.approverRole,
+    operator_id: context.operatorId,
+    recorded_at: new Date().toISOString(),
+  });
+
+  return {
+    decision_record: decisionRecord,
+    queue: updatedQueue,
+    run: updatedRun,
+    evidence_event_id: evidenceId,
+    audit_event_id: auditId,
+  };
 }
 
 async function persistWorkflow(context: MetaAgentContext, workflow: Record<string, any>): Promise<void> {
@@ -279,6 +403,25 @@ export const queueControlledActionTool = tool({
   },
 });
 
+export const recordDecisionTool = tool({
+  name: 'record_decision',
+  description: 'Write an approval/rejection decision for a queue entry and advance run state.',
+  parameters: z.object({
+    approvalId: z.string().min(1),
+    runId: z.string().optional(),
+    queueId: z.string().optional(),
+    decisionType: z.enum(['approve_once', 'approve_with_limits', 'reject', 'request_changes', 'always_reject']),
+    approverRole: z.string().min(1),
+    constraints: z.record(z.unknown()).default({}),
+    notes: z.string().default(''),
+    decidedAt: z.string().datetime().optional(),
+  }),
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    return writeDecisionAndUpdateRun(context, args);
+  },
+});
+
 export const coreMetaTools = [
   getPolicySummaryTool,
   classifyActionTool,
@@ -287,4 +430,5 @@ export const coreMetaTools = [
   buildPortfolioRoutingPlanTool,
   buildProcurementWorkflowTool,
   queueControlledActionTool,
+  recordDecisionTool,
 ];
