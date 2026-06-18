@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OrchestratorDispatch",
+  "type": "object",
+  "required": [
+    "dispatch_id",
+    "mode",
+    "status",
+    "repository",
+    "target_orchestrator",
+    "task_id",
+    "approval_id",
+    "action_type",
+    "audit_correlation_id",
+    "requested_outputs",
+    "validation_requirements",
+    "reasons",
+    "external_side_effect_executed",
+    "discovery_targets"
+  ],
+  "properties": {
+    "dispatch_id": { "type": "string" },
+    "mode": { "const": "dry_run" },
+    "status": { "enum": ["prepared", "approval_required", "approval_pending", "discovery_required", "blocked"] },
+    "repository": { "type": "string" },
+    "target_orchestrator": { "type": ["string", "null"] },
+    "task_id": { "type": "string" },
+    "approval_id": { "type": ["string", "null"] },
+    "action_type": { "type": "string" },
+    "audit_correlation_id": { "type": "string" },
+    "requested_outputs": { "type": "array", "items": { "type": "string" } },
+    "validation_requirements": { "type": "array", "items": { "type": "string" } },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "external_side_effect_executed": { "const": false },
+    "discovery_targets": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}
