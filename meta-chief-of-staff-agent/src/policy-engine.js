@@ -111,24 +111,34 @@ function classifyAction(actionType, context = {}) {
   };
 }
 
-function approvalCoversAction(decision, approval = null) {
-  if (!approval || approval.status !== 'approved') return false;
-  if (approval.expires_at && Date.parse(approval.expires_at) <= Date.now()) return false;
+function approvalCoversAction(decision, approval = null, scope = {}) {
+  if (!approval || approval.status !== 'approved' || decision.blocked) return false;
+  if (typeof approval.expires_at !== 'string') return false;
+  const expiryMs = Date.parse(approval.expires_at);
+  if (Number.isNaN(expiryMs) || expiryMs <= Date.now()) return false;
   if (!Array.isArray(approval.approved_actions) || !approval.approved_actions.includes(decision.actionType)) return false;
   const required = decision.approvals || [];
   const approvedRoles = approval.approver_roles || [];
-  return required.every((role) => approvedRoles.includes(role));
+  if (!required.every((role) => approvedRoles.includes(role))) return false;
+
+  const constraints = approval.constraints || {};
+  const allowedRepositories = approval.allowed_repositories || constraints.allowed_repositories || (constraints.allowed_repository ? [constraints.allowed_repository] : null);
+  if (scope.repository && Array.isArray(allowedRepositories) && !allowedRepositories.includes(scope.repository)) return false;
+  if (scope.environment && constraints.target_environment && constraints.target_environment !== scope.environment) return false;
+  const forbiddenActions = constraints.forbidden_actions || [];
+  if (forbiddenActions.includes(decision.actionType)) return false;
+  return true;
 }
 
 function requireApprovalPacket(actionType, context = {}) {
   const decision = classifyAction(actionType, context);
-  return decision.requiresHumanApproval || decision.blocked;
+  return !decision.blocked && decision.requiresHumanApproval;
 }
 
-function assertAllowed(actionType, context = {}, approval = null) {
+function assertAllowed(actionType, context = {}, approval = null, scope = {}) {
   const decision = classifyAction(actionType, context);
   if (decision.allowed) return decision;
-  if (approvalCoversAction(decision, approval) && !decision.blocked) {
+  if (approvalCoversAction(decision, approval, scope)) {
     return { ...decision, allowed: true, approvedByPolicy: true };
   }
   const error = new Error(decision.reason);
