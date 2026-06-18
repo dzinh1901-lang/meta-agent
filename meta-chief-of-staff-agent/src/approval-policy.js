@@ -1,6 +1,6 @@
 'use strict';
 
-const { classifyAction, approvalCoversAction } = require('./policy-engine');
+const { classifyAction, approvalActions, approvalRoles, approvalCoversAction } = require('./policy-engine');
 
 function validateApprovalDecision({ actionType, context = {}, approval = null, scope = {} }) {
   const decision = classifyAction(actionType, context);
@@ -38,10 +38,9 @@ function validateApprovalDecision({ actionType, context = {}, approval = null, s
     if (typeof approval.expires_at !== 'string' || Number.isNaN(expiryMs)) errors.push('Approval expiry is invalid.');
     else if (expiryMs <= Date.now()) errors.push('Approval has expired.');
   }
-  if (approval && Array.isArray(approval.approved_actions) && !approval.approved_actions.includes(actionType)) errors.push('Approval does not cover requested action.');
-  if (approval && !Array.isArray(approval.approved_actions)) errors.push('Approval must define approved_actions.');
+  if (approval && !approvalActions(approval).includes(actionType)) errors.push('Approval does not cover requested action.');
   if (approval && Array.isArray(decision.approvals)) {
-    const roles = approval.approver_roles || [];
+    const roles = approvalRoles(approval);
     for (const requiredRole of decision.approvals) {
       if (!roles.includes(requiredRole)) errors.push(`Missing required approver role: ${requiredRole}`);
     }
