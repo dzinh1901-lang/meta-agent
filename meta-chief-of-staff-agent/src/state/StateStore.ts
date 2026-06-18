@@ -7,7 +7,12 @@ export type StateCollection =
   | 'approvalDecisions'
   | 'agentRuns'
   | 'routingPlans'
+  | 'orchestratorResponses'
   | 'procurementWorkflows'
+  | 'marketingWorkflows'
+  | 'financeReviews'
+  | 'securityReviews'
+  | 'handoffEvents'
   | 'auditEvents';
 
 export interface StoredRecord {
