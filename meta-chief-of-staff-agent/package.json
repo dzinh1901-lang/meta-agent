@@ -9,6 +9,7 @@
     "dry-run": "node scripts/run-dry-run.js",
     "policy:check": "node scripts/run-policy-check.js",
     "packet:demo": "node scripts/run-phase3-demo.js",
+    "monitor": "node scripts/phase7-monitor-dashboard.js",
     "test:phase2": "node tests/phase2-policy.test.js",
     "test:phase3": "node tests/phase3-packets.test.js",
     "phase2": "npm run validate && npm run policy:check && npm run test:phase2",

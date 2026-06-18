@@ -70,10 +70,30 @@ npm run validate
 npm run dry-run
 npm run policy:check
 npm run packet:demo
+npm run monitor
+npm run monitor -- --postgres --schema public
 npm run test:phase2
 npm run test:phase3
 npm run phase2
 npm run phase3
+```
+
+### Monitoring Dashboard (`npm run monitor`)
+
+Use `npm run monitor` to render a local oversight view from state records:
+
+- repository health cards (from `projectHealth`/`projectHealthSnapshots`)
+- approval queue status and pending/approved backlog
+- blockers from blocked tasks, rejected queues, and blocked audit events
+- risk summaries from tasks and approvals
+- procurement queue from procurement workflows
+- marketing queue from action intent/metadata heuristics
+- audit log tail
+
+By default, the dashboard uses in-memory seed mode (empty unless `--source` is used). For persisted records, use Postgres/Supabase:
+
+```bash
+DATABASE_URL=... npm run monitor -- --postgres
 ```
 
 The included JavaScript is deterministic and dependency-free. It validates the design package, loads the repository registry, classifies actions by risk, enforces guardrails, validates scoped approvals, produces task packets, produces approval packets, creates pending approval queue items, and models pause/resume run state.
