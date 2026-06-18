@@ -31,6 +31,53 @@ const { stableId } = require('../packet-utils.js') as {
   stableId: (prefix: string, payload: unknown) => string;
 };
 
+const MULTI_APPROVER_POLICIES: Record<string, { minimumApprovers: number; requiredRoles: string[]; integrationType: string }> = {
+  billing: {
+    minimumApprovers: 2,
+    requiredRoles: ['finance_approver', 'principal_approver'],
+    integrationType: 'billing_platform',
+  },
+  marketing: {
+    minimumApprovers: 2,
+    requiredRoles: ['marketing_approver', 'principal_approver'],
+    integrationType: 'marketing_platform',
+  },
+  procurement: {
+    minimumApprovers: 2,
+    requiredRoles: ['procurement_approver', 'finance_approver', 'principal_approver'],
+    integrationType: 'procurement_platform',
+  },
+  deployment: {
+    minimumApprovers: 2,
+    requiredRoles: ['engineering_approver', 'principal_approver', 'security_approver'],
+    integrationType: 'deployment_service',
+  },
+};
+
+function getMultiApproverPolicy(policy: Record<string, unknown>) {
+  const category = String(policy.category || '').toLowerCase();
+  return MULTI_APPROVER_POLICIES[category] ?? null;
+}
+
+function addApproverQuorum(policyDecision: Record<string, unknown>) {
+  const policy = getMultiApproverPolicy(policyDecision);
+  if (!policy) return policyDecision;
+  const approvals = Array.from(
+    new Set([...(Array.isArray(policyDecision.approvals) ? policyDecision.approvals : []), ...policy.requiredRoles])
+  );
+  return {
+    ...policyDecision,
+    approvals,
+    minApprovers: policy.minimumApprovers,
+    integrationType: policy.integrationType,
+    multiApproverRequired: true,
+  };
+}
+
+function isServerSideSecretField(field: string) {
+  return ['api_key', 'apiKey', 'token', 'secret', 'oauth', 'webhook_secret'].includes(field);
+}
+
 const actionContextSchema = z.object({
   selfApprovalAttempt: z.boolean().optional(),
   bypassRepositoryOrchestrator: z.boolean().optional(),
@@ -675,6 +722,282 @@ export const queueControlledActionTool = tool({
   },
 });
 
+export const scheduleRepositoryScanTool = tool({
+  name: 'run_scheduled_scan',
+  description: 'Run a read-only scheduled scan across one or more repositories and persist scan tasks to state.',
+  parameters: z.object({
+    repositories: z.array(z.string().min(1)).optional(),
+    actionType: z.string().default('compute_project_health'),
+    scanLabel: z.string().default('portfolio_control_plane_scan'),
+    objective: z.string().default('Run scheduled read-only portfolio scan.'),
+    context: actionContextSchema.optional(),
+  }),
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    const repositoryList = (args.repositories && args.repositories.length)
+      ? args.repositories
+      : context.registry.repositories.map((repo) => repo.repository_full_name);
+    const workflows = [];
+    for (const repository of repositoryList) {
+      requireAuthorizedRepository(context, repository);
+      const workflow = buildTaskApprovalWorkflow({
+        registry: context.registry,
+        objective: args.objective,
+        repository,
+        action: { type: args.actionType, summary: args.objective },
+        actionType: args.actionType,
+        context: args.context || {},
+        requestedOutputs: ['project_health', 'scan_report'],
+        validationRequirements: ['read-only scan', 'human review for any blocked scan'],
+        evidenceBundle: {
+          source: 'scheduled_scan',
+          scan_label: args.scanLabel,
+          policy_version: '0.2.0',
+        },
+        expectedOutcome: `Produce read-only scan task packet for ${repository}.`,
+        rollbackPlan: 'No external mutation occurs during scheduled scanning.',
+        createdAt: new Date().toISOString(),
+      });
+      await persistWorkflow(context, workflow);
+      workflows.push({
+        repository,
+        workflow_id: workflow.task_packet?.task_id || null,
+        queue_status: workflow.pending_approval ? workflow.pending_approval.status : 'not_required',
+        run_id: workflow.agent_run?.run_id || null,
+      });
+    }
+    const alertId = stableId('audit', {
+      type: 'scheduled_scan_completed',
+      scan_label: args.scanLabel,
+      repositories: repositoryList,
+      operator: context.operatorId,
+    });
+    await context.stateStore.put('auditEvents', alertId, {
+      event_type: 'scheduled_scan_completed',
+      scan_label: args.scanLabel,
+      repository_count: repositoryList.length,
+      operator_id: context.operatorId,
+      task_count: workflows.length,
+      created_at: new Date().toISOString(),
+    });
+    return {
+      scan_label: args.scanLabel,
+      repositories: repositoryList,
+      action_type: args.actionType,
+      workflow_count: workflows.length,
+      workflows,
+      source: 'scheduled_scan_tool',
+      audit_event_id: alertId,
+      external_side_effects_executed: false,
+    };
+  },
+});
+
+export const prepareControlledIntegrationTool = tool({
+  name: 'prepare_controlled_integration',
+  description: 'Prepare an approval-gated payload for billing/marketing/procurement integrations; no server-side secrets are accepted.',
+  parameters: z.object({
+    repository: z.string().min(1),
+    actionType: z.string().min(1),
+    objective: z.string().min(1),
+    integrationMeta: z.record(z.unknown()).default({}),
+    requestedOutputs: z.array(z.string()).default(['integration_payload', 'approval_packet']),
+    approvalReason: z.string().default('human-in-the-loop required'),
+    environment: z.string().default('non-production'),
+  }),
+  needsApproval: true,
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    requireAuthorizedRepository(context, args.repository);
+    if (Object.keys(args.integrationMeta || {}).some((key) => isServerSideSecretField(key))) {
+      throw new Error('Integration secrets must be resolved server-side only and must not be passed as arguments.');
+    }
+    const decision = classifyAction(args.actionType, { objective: args.objective, environment: args.environment });
+    if (decision.blocked) {
+      throw new Error(`Integration cannot be prepared because action is blocked: ${String(decision.reason)}`);
+    }
+    if (!decision.requiresHumanApproval) {
+      throw new Error('Integration path is not configured for approval-gated execution in this plan.');
+    }
+    const gatedDecision = addApproverQuorum(decision);
+    const workflow = buildTaskApprovalWorkflow({
+      registry: context.registry,
+      objective: args.objective,
+      repository: args.repository,
+      action: { type: args.actionType, summary: args.objective },
+      actionType: args.actionType,
+      policyDecision: gatedDecision,
+      context: {
+        externalMessageWithoutApproval: true,
+        paidSpendWithoutApproval: true,
+      },
+      requestedOutputs: ['integration_payload', 'approval_packet', 'rollback_plan', 'audit_summary'],
+      validationRequirements: [
+        'no secrets in payload',
+        'human approval required before any external call',
+        'server-side secret retrieval only',
+      ],
+      evidenceBundle: {
+        policy_version: '0.2.0',
+        integration_meta: args.integrationMeta,
+      },
+      expectedOutcome: `Prepare a server-side controlled payload for ${args.actionType} and await approval before execution.`,
+      rollbackPlan: `Do not execute external integration call unless approvals are valid and unexpired. Revoke prepared payload after expiry.`,
+      createdAt: new Date().toISOString(),
+      costImpact: null,
+      customerSupplierImpact: `Potential integration action in ${args.environment} with multi-approver controls.`,
+    });
+    await persistWorkflow(context, workflow);
+    const approval = workflow.approval_packet as Record<string, any> | null | undefined;
+    const policy = getMultiApproverPolicy(gatedDecision);
+    const control = policy
+      ? {
+          minimumApprovers: policy.minimumApprovers,
+          requiredApproverRoles: Array.from(new Set([...(approval?.required_approver_roles || []), ...policy.requiredRoles])),
+          integrationType: policy.integrationType,
+        }
+      : null;
+    return {
+      ...workflow,
+      tool: 'prepare_controlled_integration',
+      approval: approval || null,
+      multi_approver_control: control,
+      note: args.approvalReason,
+      environment: args.environment,
+      integration_payload: {
+        destination: String(gatedDecision.category || 'external_integration'),
+        action_type: args.actionType,
+        repository: args.repository,
+        approval_gate_required: true,
+        multi_approver_required: Boolean(policy),
+        prepared_at: new Date().toISOString(),
+        server_side_secret_required: true,
+      },
+    };
+  },
+});
+
+export const emitExternalAlertTool = tool({
+  name: 'emit_external_alert',
+  description: 'Record a controlled external alert artifact for high-risk conditions and incidents.',
+  parameters: z.object({
+    title: z.string().min(1),
+    message: z.string().min(1),
+    severity: z.enum(['info', 'warning', 'critical']).default('warning'),
+    source: z.string().default('production_control_plane'),
+    correlationId: z.string().optional(),
+  }),
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    const id = stableId('alert', { title: args.title, source: args.source, correlationId: args.correlationId || 'none' });
+    await context.stateStore.put('auditEvents', id, {
+      event_type: 'external_alert',
+      alert_id: id,
+      source: args.source,
+      title: args.title,
+      message: args.message,
+      severity: args.severity,
+      correlation_id: args.correlationId || null,
+      operator_id: context.operatorId,
+      recorded_at: new Date().toISOString(),
+    });
+    return { alert_id: id, status: 'recorded', source: args.source, severity: args.severity };
+  },
+});
+
+export const buildBackupPlanTool = tool({
+  name: 'build_backup_plan',
+  description: 'Prepare a deterministic backup workflow artifact for potential rollback.',
+  parameters: z.object({
+    repository: z.string().min(1),
+    targetScope: z.string().default('full'),
+    objective: z.string().default('Prepare backup manifest for rollback readiness.'),
+    retentionDays: z.number().int().positive().max(365).default(30),
+    runCorrelationId: z.string().optional(),
+  }),
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    requireAuthorizedRepository(context, args.repository);
+    const backupId = stableId('backup', { repository: args.repository, targetScope: args.targetScope, timestamp: new Date().toISOString() });
+    const workflow = buildTaskApprovalWorkflow({
+      registry: context.registry,
+      objective: args.objective,
+      repository: args.repository,
+      action: { type: 'create_internal_plan', summary: args.objective },
+      actionType: 'create_internal_plan',
+      requestedOutputs: ['backup_manifest', 'rollback_readiness'],
+      validationRequirements: ['read-only backup planning'],
+      evidenceBundle: {
+        policy_version: '0.2.0',
+        backup_artifact: backupId,
+      },
+      expectedOutcome: 'Prepare a recovery/rollback readiness plan.',
+      rollbackPlan: 'Retain plan until next backup window; invalidate after successful incident test.',
+      createdAt: new Date().toISOString(),
+    });
+    await context.stateStore.put('approvalPackets', backupId, {
+      backup_plan_id: backupId,
+      repository: args.repository,
+      scope: args.targetScope,
+      retention_days: args.retentionDays,
+      workflow_task_id: workflow.task_packet?.task_id || null,
+      run_correlation_id: args.runCorrelationId || null,
+      prepared_by: context.operatorId,
+      created_at: new Date().toISOString(),
+      status: 'prepared',
+      external_side_effect_executed: false,
+    });
+    return {
+      backup_plan_id: backupId,
+      repository: args.repository,
+      scope: args.targetScope,
+      retention_days: args.retentionDays,
+      run_correlation_id: args.runCorrelationId || null,
+      rollback_readiness: 'queued',
+      task_packet_id: workflow.task_packet?.task_id || null,
+    };
+  },
+});
+
+export const buildRollbackPlanTool = tool({
+  name: 'build_rollback_plan',
+  description: 'Prepare a deterministic rollback workflow plan that stays server-side until authorized.',
+  parameters: z.object({
+    repository: z.string().min(1),
+    targetRunId: z.string().min(1),
+    triggerEventId: z.string().optional(),
+    recoveryObjective: z.string().default('Revert last unsafe change after approved rollback.'),
+  }),
+  async execute(args, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    requireAuthorizedRepository(context, args.repository);
+    const rollbackId = stableId('rollback', { repository: args.repository, targetRunId: args.targetRunId });
+    const rollbackRecord = {
+      rollback_plan_id: rollbackId,
+      repository: args.repository,
+      target_run_id: args.targetRunId,
+      trigger_event_id: args.triggerEventId || null,
+      recovery_objective: args.recoveryObjective,
+      approval_required: true,
+      requested_by: context.operatorId,
+      prepared_at: new Date().toISOString(),
+      status: 'prepared',
+      execution_mode: 'controlled_runbook_only',
+      executed: false,
+    };
+    await context.stateStore.put('agentRuns', rollbackId, rollbackRecord);
+    await context.stateStore.put('auditEvents', rollbackId, {
+      event_type: 'rollback_plan_prepared',
+      rollback_plan_id: rollbackId,
+      repository: args.repository,
+      target_run_id: args.targetRunId,
+      operator_id: context.operatorId,
+      recorded_at: new Date().toISOString(),
+    });
+    return rollbackRecord;
+  },
+});
+
 export const recordDecisionTool = tool({
   name: 'record_decision',
   description: 'Write an approval/rejection decision for a queue entry and advance run state.',
@@ -705,4 +1028,9 @@ export const coreMetaTools = [
   createGitHubIssueTool,
   createDraftPRTool,
   recordDecisionTool,
+  scheduleRepositoryScanTool,
+  prepareControlledIntegrationTool,
+  emitExternalAlertTool,
+  buildBackupPlanTool,
+  buildRollbackPlanTool,
 ];
