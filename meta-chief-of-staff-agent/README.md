@@ -1,93 +1,128 @@
 # Meta Chief of Staff Agent
 
-This folder starts a dedicated project for a portfolio-level **Meta Agent / Chief of Staff Agent**. The system is designed to supervise all current project repositories, route work through each repository's own orchestrator, maintain human authorization gates, and coordinate portfolio functions such as procurement, marketing, launch readiness, security, billing, compliance, and evidence collection.
+A governed portfolio-level agent that supervises GitHub project orchestrators, prepares project and procurement workflows, and pauses sensitive tool calls for human authorization.
 
-The design deliberately does **not** replace repository-level orchestrators. It introduces a controlled oversight layer that can inspect project state, request plans, route work packets, consolidate blockers, and prepare approval packets for humans.
+The Chief of Staff is a manager, not an autonomous operator. It can inspect, classify, plan, route, summarize, and prepare approval artifacts. It cannot self-approve, access secrets, merge pull requests, deploy, mutate production, publish externally, spend money, award vendors, or sign contracts.
 
-## Core Principle
-
-```txt
-Portfolio Chief of Staff Agent
-  -> supervises repository-level orchestrators
-  -> orchestrators supervise project-level sub-agents
-  -> sub-agents execute bounded specialist workflows
-  -> high-risk actions pause for human authorization
-```
-
-Authority is supervisory and procedural. The Chief of Staff Agent can recommend, route, rank, hold, and escalate. It must not self-approve production, billing, procurement awards, public marketing, supplier/client communications, live credentials, or regulated/high-risk actions.
-
-## Project Folder Map
+## Architecture
 
 ```txt
-meta-chief-of-staff-agent/
-├── README.md
-├── PRD.md
-├── ARCHITECTURE.md
-├── ROADMAP.md
-├── MILESTONES.md
-├── IMPLEMENTATION-PLAN.md
-├── AGENT-MODEL.md
-├── GOVERNANCE-AUTHORIZATIONS.md
-├── RISK-REGISTER.md
-├── agents/
-├── docs/
-│   ├── human-in-the-loop.md
-│   ├── integration-blueprint.md
-│   ├── operating-cadence.md
-│   ├── repository-inventory.md
-│   ├── PHASE-2-RISK-POLICY-ENFORCEMENT.md
-│   └── PHASE-3-TASK-APPROVAL-PACKETS.md
-├── policies/
-├── registries/
-├── schemas/
-├── examples/
-├── src/
-│   ├── approval-packet-builder.js
-│   ├── approval-policy.js
-│   ├── guardrails.js
-│   ├── meta-chief-agent.js
-│   ├── packet-utils.js
-│   ├── packet-workflow.js
-│   ├── policy-engine.js
-│   ├── repository-registry.js
-│   ├── run-state.js
-│   └── task-packet-builder.js
-├── scripts/
-│   ├── run-dry-run.js
-│   ├── run-phase3-demo.js
-│   ├── run-policy-check.js
-│   └── validate-project.js
-├── tests/
-│   ├── phase2-policy.test.js
-│   └── phase3-packets.test.js
-└── package.json
+Human operator / approvers
+  -> Meta Chief of Staff Agent
+       -> deterministic policy and packet tools
+       -> Cross-Repository Orchestrator
+       -> Procurement Oversight Agent
+       -> Marketing Oversight Agent
+       -> Finance Ops Agent
+       -> Security Compliance Agent
+       -> Audit Evidence Agent
+  -> repository-level orchestrators
+  -> project specialist agents
 ```
 
-## Local Commands
+The root agent uses the OpenAI Agents SDK manager-as-tools pattern. Sensitive controlled-action requests use SDK human-in-the-loop interruptions and resume from `RunState` after an explicit approval or rejection.
+
+## Current implementation
+
+- Deterministic action taxonomy, risk classification, hard blocks, and scoped approval policy
+- Task packets, approval packets, pending approval queues, and multi-role decisions
+- Run pause, resume, reject, and blocked-state transitions
+- Repository-orchestrator compatibility and dry-run portfolio routing
+- Procurement research, shortlist, award, contract, and payment readiness gates
+- Vendor risk matrix and repository/budget/vendor-scoped approval packets
+- Typed state-store interface with an in-memory implementation
+- Root Agents SDK manager and six specialist agents
+- Read-only portfolio/control-plane tools
+- Interactive CLI with local session memory and serialized approval run state
+- Deterministic Phase 2–4 tests and GitHub Actions verification
+
+## Install
+
+```bash
+cd meta-chief-of-staff-agent
+npm install --ignore-scripts
+npm run verify
+```
+
+`npm run verify` executes deterministic validation and Phase 2–4 tests, TypeScript type checking, and a non-network SDK graph smoke test.
+
+## Interactive agent
+
+Set runtime configuration:
+
+```bash
+export OPENAI_API_KEY="..."
+export OPENAI_MODEL="gpt-5.5"
+export META_AGENT_OPERATOR_ID="principal-user-id"
+export META_AGENT_OPERATOR_ROLES="principal_approver,engineering_approver,security_approver,finance_approver,procurement_approver,marketing_approver,legal_compliance_approver"
+export META_AGENT_MODE="approval_gated"
+export META_AGENT_ENVIRONMENT="local"
+```
+
+Start an interactive session:
+
+```bash
+npm run sdk:chat
+```
+
+Run one request:
+
+```bash
+npm run sdk:chat -- --once "Summarize the portfolio and show pending approvals."
+```
+
+Resume a serialized approval run:
+
+```bash
+npm run sdk:resume
+```
+
+The CLI stores a paused SDK `RunState` in `.meta-agent-run-state.json` by default. Override the location with `META_AGENT_RUN_STATE_FILE`.
+
+## Commands
 
 ```bash
 npm run validate
 npm run dry-run
 npm run policy:check
 npm run packet:demo
+npm run procurement:demo
 npm run test:phase2
 npm run test:phase3
-npm run phase2
-npm run phase3
+npm run test:phase4
+npm run phase4
+npm run typecheck
+npm run sdk:smoke
+npm run sdk:chat
+npm run verify
 ```
 
-The included JavaScript is deterministic and dependency-free. It validates the design package, loads the repository registry, classifies actions by risk, enforces guardrails, validates scoped approvals, produces task packets, produces approval packets, creates pending approval queue items, and models pause/resume run state.
+## Safety behavior
 
-## Current Build Status
+- Read-only actions may proceed without approval.
+- Approval-required actions create task, approval, queue, and run records and pause.
+- Hard-blocked or incomplete commitment actions do not receive an execution approval packet.
+- `queue_controlled_action` validates the referenced approval packet, repository, action, expiry, environment constraints, and operator roles.
+- A successful controlled-action authorization records an audit event with `external_side_effect_executed: false`.
+- No live GitHub write, deployment, billing, marketing-send, vendor-award, contract, or payment adapter is enabled.
 
-- Phase 0 scaffold: complete.
-- Phase 1 read-only discovery design target: defined in roadmap/docs.
-- Phase 2 risk and policy enforcement: implemented.
-- Phase 3 task and approval packet generation: implemented.
+## Phase status
 
-## Immediate Next Commit Target
+| Phase | Status |
+|---|---|
+| Phase 0 — Scaffold and guardrails | Complete |
+| Phase 1 — Evidence-backed repository discovery | Partial; seed registry only |
+| Phase 2 — Risk and policy enforcement | Implemented |
+| Phase 3 — Task and approval packets | Implemented |
+| Phase 4 — Orchestrator routing and procurement pilot | Implemented for dry-run/local use |
+| Phase 5 — Marketing oversight workflow | Next domain phase |
+| Phase 6 — Controlled GitHub writes | Not enabled |
+| Phase 7–8 — Dashboard and production operations | Not ready |
 
-1. Add repository-orchestrator routing adapters.
-2. Add typed state-store interfaces for persisted task packets, approvals, and agent runs.
-3. Add read-only GitHub discovery adapter for project-health evidence.
-4. Keep external side effects blocked until explicit human authorization exists.
+## Audit
+
+See [`docs/COMPREHENSIVE-AUDIT-2026-06-18.md`](docs/COMPREHENSIVE-AUDIT-2026-06-18.md) for findings, production blockers, and the recommended implementation sequence.
+
+## Production blockers
+
+Before production use, complete evidence-backed GitHub discovery, durable state and append-only audit storage, authenticated RBAC/multi-approver identity, hardened external adapters, monitoring, incident workflows, and deployment review.
