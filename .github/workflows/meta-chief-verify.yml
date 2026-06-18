@@ -29,5 +29,20 @@ jobs:
       - name: Install audited dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
 
-      - name: Verify deterministic phases and SDK graph
-        run: npm run verify
+      - name: Validate project contracts
+        run: npm run validate
+
+      - name: Run Phase 2 policy tests
+        run: npm run test:phase2
+
+      - name: Run Phase 3 packet tests
+        run: npm run test:phase3
+
+      - name: Run Phase 4 routing and procurement tests
+        run: npm run test:phase4
+
+      - name: Type-check Agents SDK runtime
+        run: npm run typecheck
+
+      - name: Smoke-check Agents SDK graph
+        run: npm run sdk:smoke
