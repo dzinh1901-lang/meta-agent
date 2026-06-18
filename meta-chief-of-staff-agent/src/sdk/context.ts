@@ -29,19 +29,28 @@ export interface PortfolioRegistry {
 
 export interface MetaAgentContext {
   operatorId: string;
+  operatorRoles: string[];
   mode: 'dry_run' | 'approval_gated';
   registry: PortfolioRegistry;
   stateStore: StateStore;
   authorizedRepositories: string[];
+  environment: string;
+}
+
+function parseOperatorRoles(value: string | undefined): string[] {
+  if (!value) return ['principal_approver'];
+  return Array.from(new Set(value.split(',').map((role) => role.trim()).filter(Boolean)));
 }
 
 export function createMetaAgentContext(options: Partial<MetaAgentContext> = {}): MetaAgentContext {
   const registry = options.registry ?? loadRegistry();
   return {
-    operatorId: options.operatorId ?? 'local-operator',
-    mode: options.mode ?? 'dry_run',
+    operatorId: options.operatorId ?? process.env.META_AGENT_OPERATOR_ID ?? 'local-operator',
+    operatorRoles: options.operatorRoles ?? parseOperatorRoles(process.env.META_AGENT_OPERATOR_ROLES),
+    mode: options.mode ?? (process.env.META_AGENT_MODE === 'approval_gated' ? 'approval_gated' : 'dry_run'),
     registry,
     stateStore: options.stateStore ?? new InMemoryStateStore(),
     authorizedRepositories: options.authorizedRepositories ?? registry.repositories.map((repo) => repo.repository_full_name),
+    environment: options.environment ?? process.env.META_AGENT_ENVIRONMENT ?? 'local',
   };
 }
