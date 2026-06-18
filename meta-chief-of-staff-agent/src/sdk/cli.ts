@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import readline from 'node:readline/promises';
+import { createInterface, type Interface } from 'node:readline/promises';
 import process from 'node:process';
 import { MemorySession, Runner, RunState } from '@openai/agents';
 import { createMetaAgentContext } from './context.js';
@@ -34,7 +34,7 @@ async function removeRunState(): Promise<void> {
   if (await fileExists(stateFile)) await fs.unlink(stateFile);
 }
 
-async function resolveInterruptions(result: any, rl: readline.Interface): Promise<any> {
+async function resolveInterruptions(result: any, rl: Interface): Promise<any> {
   let current = result;
   while (current.interruptions?.length) {
     await saveRunState(current.state);
@@ -65,13 +65,13 @@ async function resolveInterruptions(result: any, rl: readline.Interface): Promis
   return current;
 }
 
-async function runTurn(input: string, rl: readline.Interface): Promise<void> {
+async function runTurn(input: string, rl: Interface): Promise<void> {
   let result = await runner.run(metaChiefOfStaffAgent, input, { context, session });
   result = await resolveInterruptions(result, rl);
   console.log(`\nChief of Staff:\n${outputText(result.finalOutput)}\n`);
 }
 
-async function resumeSavedRun(rl: readline.Interface): Promise<void> {
+async function resumeSavedRun(rl: Interface): Promise<void> {
   if (!(await fileExists(stateFile))) throw new Error(`No saved RunState exists at ${stateFile}.`);
   const serialized = await fs.readFile(stateFile, 'utf8');
   const state = await RunState.fromString(metaChiefOfStaffAgent, serialized);
@@ -85,7 +85,7 @@ async function main(): Promise<void> {
     throw new Error('OPENAI_API_KEY is required for the interactive Agents SDK runtime.');
   }
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
     if (process.argv.includes('--resume')) {
       await resumeSavedRun(rl);
