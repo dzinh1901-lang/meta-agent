@@ -1,31 +1,57 @@
-schema_version: 0.1.0
+schema_version: 0.2.0
 fail_closed_on_unknown_action: true
+default_mode: read_only_until_authorized
+self_approval_allowed: false
 
 risk_levels:
   low:
     description: Read-only, internal, non-sensitive.
     human_approval_required: false
+    default_execution: allowed_read_only
   medium:
     description: Internal planning or low-impact repository coordination.
     human_approval_required: conditional
+    default_execution: pause_if_external_write_or_missing_repo_policy
   high:
     description: Code, data, external drafts, procurement recommendations, security-sensitive configuration.
     human_approval_required: true
+    default_execution: pause_for_approval
   critical:
     description: Production, billing, spend, vendor award, legal/compliance, regulated-domain, public/external action.
     human_approval_required: true
+    default_execution: pause_or_block
 
 hard_blocks:
-  - self_approval
-  - bypass_repository_orchestrator
-  - secrets_access_without_security_approval
-  - production_mutation_without_approval
-  - external_message_without_approval
-  - public_marketing_without_approval
-  - paid_spend_without_finance_approval
-  - vendor_award_without_procurement_finance_approval
-  - regulated_or_controlled_goods_procurement
-  - removing_approval_gates_without_policy_review
+  selfApprovalAttempt:
+    reason: Self-approval is blocked.
+  bypassRepositoryOrchestrator:
+    reason: Bypassing repository orchestrator is blocked.
+  requestsSecrets:
+    reason: Secret access is blocked by default.
+  productionMutationWithoutApproval:
+    reason: Production mutation is blocked without scoped human approval.
+  externalMessageWithoutApproval:
+    reason: External message delivery is blocked without approval.
+  paidSpendWithoutApproval:
+    reason: Paid spend is blocked without finance/principal approval.
+  vendorAwardWithoutApproval:
+    reason: Vendor award or procurement commitment is blocked without procurement/finance/principal approval.
+  disableApprovalGates:
+    reason: Removing or disabling approval gates is blocked without policy review.
+  regulatedDomain:
+    reason: Regulated-domain action is blocked without explicit legal/compliance authorization.
+
+v1_prohibited_actions:
+  - merge_pull_request
+  - trigger_deployment
+  - request_secret_access
+
+approval_validation:
+  approval_status_must_equal: approved
+  approval_must_include_requested_action: true
+  approval_must_include_required_roles: true
+  approval_must_not_be_expired: true
+  approval_must_not_override_hard_blocks: true
 
 required_evidence_for_high_or_critical:
   - action_summary
@@ -36,3 +62,5 @@ required_evidence_for_high_or_critical:
   - rollback_plan
   - approver_roles
   - expiry
+  - constraints
+  - evidence_bundle
