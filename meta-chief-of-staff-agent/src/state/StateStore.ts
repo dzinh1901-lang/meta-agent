@@ -1,14 +1,17 @@
 export type StateCollection =
   | 'repositories'
   | 'projectHealth'
+  | 'projectHealthSnapshots'
   | 'taskPackets'
   | 'approvalPackets'
   | 'approvalQueues'
   | 'approvalDecisions'
+  | 'evidenceEvents'
   | 'agentRuns'
   | 'routingPlans'
   | 'procurementWorkflows'
-  | 'auditEvents';
+  | 'auditEvents'
+  | 'policyVersions';
 
 export interface StoredRecord {
   id: string;
