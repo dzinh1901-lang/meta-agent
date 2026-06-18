@@ -12,7 +12,8 @@ const TASK_PACKET_REQUIRED_FIELDS = [
   'risk_level',
   'requested_outputs',
   'validation_requirements',
-  'audit_correlation_id'
+  'audit_correlation_id',
+  'execution_disposition'
 ];
 
 function resolveTargetOrchestrator({ repository, targetOrchestrator, registry }) {
@@ -42,6 +43,14 @@ function buildTaskPacket(input) {
     requestedOutputs,
     validationRequirements
   });
+  const blocked = Boolean(decision.blocked);
+  const requiresHumanApproval = !blocked && Boolean(decision.requiresHumanApproval);
+  const executionDisposition = blocked ? 'blocked' : requiresHumanApproval ? 'approval_required' : 'allowed';
+  const routingStatus = blocked
+    ? 'blocked_by_policy'
+    : targetOrchestrator
+      ? 'orchestrator_known'
+      : 'requires_orchestrator_discovery';
 
   const base = {
     objective,
@@ -52,14 +61,17 @@ function buildTaskPacket(input) {
     risk_level: input.riskLevel || decision.risk,
     requested_outputs: requestedOutputs,
     validation_requirements: validationRequirements,
-    requires_human_approval: Boolean(decision.requiresHumanApproval || decision.blocked),
+    requires_human_approval: requiresHumanApproval,
     approval_id: input.approvalId || null,
     audit_correlation_id: auditCorrelationId,
     priority: input.priority || (decision.risk === 'critical' ? 'critical' : decision.risk === 'high' ? 'high' : 'medium'),
     due_at: input.dueAt || null,
     evidence_refs: normalizeArray(input.evidenceRefs),
     policy_decision: decision,
-    routing_status: targetOrchestrator ? 'orchestrator_known' : 'requires_orchestrator_discovery'
+    blocked,
+    block_reasons: normalizeArray(decision.blockReasons),
+    execution_disposition: executionDisposition,
+    routing_status: routingStatus
   };
 
   const packet = { task_id: input.taskId || stableId('task', base), ...base };
@@ -67,6 +79,7 @@ function buildTaskPacket(input) {
 }
 
 function attachApprovalToTaskPacket(taskPacket, approvalPacket) {
+  if (taskPacket.blocked) throw new Error('Blocked task packets cannot receive an execution approval.');
   if (!approvalPacket || !approvalPacket.approval_id) {
     throw new Error('approvalPacket with approval_id is required.');
   }
@@ -74,7 +87,8 @@ function attachApprovalToTaskPacket(taskPacket, approvalPacket) {
     ...taskPacket,
     requires_human_approval: true,
     approval_id: approvalPacket.approval_id,
-    approval_status: approvalPacket.status || 'pending'
+    approval_status: approvalPacket.status || 'pending',
+    execution_disposition: 'approval_required'
   };
 }
 
