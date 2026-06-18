@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { MetaAgentContext } from './context.js';
 
 const { classifyAction, summarizePolicy } = require('../policy-engine.js') as {
-  classifyAction: (actionType: string, context?: Record<string, unknown>) => Record<string, unknown>;
+  classifyAction: (actionType: string, context?: Record<string, unknown>) => Record<string, any>;
   summarizePolicy: () => Record<string, unknown>;
 };
 const { buildTaskApprovalWorkflow } = require('../packet-workflow.js') as {
@@ -42,6 +42,15 @@ function requireAuthorizedRepository(context: MetaAgentContext, repository: stri
   }
 }
 
+function asRecord(value: unknown, label: string): Record<string, any> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label} must be an object.`);
+  return value as Record<string, any>;
+}
+
+function includesAll(values: string[], required: string[]): boolean {
+  return required.every((value) => values.includes(value));
+}
+
 async function persistWorkflow(context: MetaAgentContext, workflow: Record<string, any>): Promise<void> {
   const task = workflow.task_packet as Record<string, any> | undefined;
   const approval = workflow.approval_packet as Record<string, any> | null | undefined;
@@ -58,6 +67,42 @@ async function persistWorkflow(context: MetaAgentContext, workflow: Record<strin
       ...blocked,
     });
   }
+}
+
+async function loadAndValidateApprovalPacket(
+  context: MetaAgentContext,
+  args: { actionType: string; repository: string; approvalPacketId: string; environment: string },
+): Promise<Record<string, any>> {
+  const stored = await context.stateStore.get('approvalPackets', args.approvalPacketId);
+  if (!stored) throw new Error(`Approval packet not found: ${args.approvalPacketId}`);
+  const packet = asRecord(stored.value, 'Approval packet');
+
+  if (packet.approval_id !== args.approvalPacketId) throw new Error('Stored approval packet ID is inconsistent.');
+  if (packet.action_type !== args.actionType) throw new Error('Approval packet does not cover the requested action type.');
+  if (!Array.isArray(packet.affected_repositories) || !packet.affected_repositories.includes(args.repository)) {
+    throw new Error('Approval packet does not cover the requested repository.');
+  }
+  const expiry = Date.parse(String(packet.expires_at ?? ''));
+  if (Number.isNaN(expiry) || expiry <= Date.now()) throw new Error('Approval packet is expired or has an invalid expiry.');
+
+  const requiredRoles = Array.isArray(packet.required_approver_roles) ? packet.required_approver_roles.map(String) : [];
+  if (!includesAll(context.operatorRoles, requiredRoles)) {
+    const missing = requiredRoles.filter((role: string) => !context.operatorRoles.includes(role));
+    throw new Error(`Current operator lacks required approval roles: ${missing.join(', ')}`);
+  }
+
+  const constraints = asRecord(packet.constraints ?? {}, 'Approval constraints');
+  const allowedRepositories = Array.isArray(constraints.allowed_repositories)
+    ? constraints.allowed_repositories.map(String)
+    : constraints.allowed_repository
+      ? [String(constraints.allowed_repository)]
+      : null;
+  if (allowedRepositories && !allowedRepositories.includes(args.repository)) throw new Error('Approval constraints do not cover the repository.');
+  if (constraints.allowed_action_type && constraints.allowed_action_type !== args.actionType) throw new Error('Approval constraints do not cover the action type.');
+  if (constraints.target_environment && constraints.target_environment !== args.environment) throw new Error('Approval constraints do not cover the environment.');
+  if (Array.isArray(constraints.forbidden_actions) && constraints.forbidden_actions.includes(args.actionType)) throw new Error('Requested action is forbidden by the approval constraints.');
+
+  return packet;
 }
 
 export const getPolicySummaryTool = tool({
@@ -108,6 +153,31 @@ export const getPortfolioRegistryTool = tool({
   },
 });
 
+export const getControlPlaneSnapshotTool = tool({
+  name: 'get_control_plane_snapshot',
+  description: 'Return read-only counts and pending approvals from the local control-plane state store.',
+  parameters: z.object({ includePendingApprovals: z.boolean().default(true) }),
+  async execute({ includePendingApprovals }, runContext) {
+    const context = getContext(runContext as RunContext<MetaAgentContext>);
+    const collections = ['taskPackets', 'approvalPackets', 'approvalQueues', 'agentRuns', 'routingPlans', 'procurementWorkflows', 'auditEvents'] as const;
+    const entries = await Promise.all(collections.map(async (collection) => [collection, await context.stateStore.list(collection)] as const));
+    const counts = Object.fromEntries(entries.map(([collection, records]) => [collection, records.length]));
+    const approvalQueues = entries.find(([collection]) => collection === 'approvalQueues')?.[1] ?? [];
+    const pending = approvalQueues
+      .map((record) => asRecord(record.value, 'Approval queue'))
+      .filter((queue) => queue.status === 'pending');
+    return {
+      operator_id: context.operatorId,
+      operator_roles: context.operatorRoles,
+      mode: context.mode,
+      environment: context.environment,
+      counts,
+      pending_approval_count: pending.length,
+      ...(includePendingApprovals ? { pending_approvals: pending } : {}),
+    };
+  },
+});
+
 export const buildTaskWorkflowTool = tool({
   name: 'build_task_workflow',
   description: 'Build a deterministic task packet, approval packet when needed, pending approval item, and run state for one repository. No external side effect occurs.',
@@ -135,7 +205,7 @@ export const buildTaskWorkflowTool = tool({
       requestedOutputs: args.requestedOutputs,
       validationRequirements: args.validationRequirements,
       evidenceRefs: args.evidenceRefs,
-      evidenceBundle: { policy_version: '0.2.0', evidence_refs: args.evidenceRefs ?? [] },
+      evidenceBundle: { policy_version: '0.3.0', evidence_refs: args.evidenceRefs ?? [] },
       expectedOutcome: args.expectedOutcome,
       rollbackPlan: args.rollbackPlan,
     });
@@ -195,9 +265,10 @@ export const buildProcurementWorkflowTool = tool({
     intent: z.enum(['research', 'shortlist', 'award', 'contract', 'payment']).default('research'),
     category: z.string().optional(),
     estimatedCost: z.number().nonnegative().optional(),
-    currency: z.string().default('USD'),
+    currency: z.string().length(3).default('USD'),
     budgetOwner: z.string().optional(),
     vendors: z.array(vendorSchema).default([]),
+    selectedVendorId: z.string().optional(),
     contractRequired: z.boolean().default(false),
     dataAccess: z.boolean().default(false),
     systemAccess: z.boolean().default(false),
@@ -206,6 +277,9 @@ export const buildProcurementWorkflowTool = tool({
     regulatedDomain: z.boolean().default(false),
     administrativeReviewOnly: z.boolean().default(false),
     legalComplianceReviewId: z.string().optional(),
+    securityReviewId: z.string().optional(),
+    contractId: z.string().optional(),
+    purchaseOrderId: z.string().optional(),
     controlledGoods: z.boolean().default(false),
     defenseRelated: z.boolean().default(false),
     weaponsRelated: z.boolean().default(false),
@@ -224,6 +298,7 @@ export const buildProcurementWorkflowTool = tool({
       currency: args.currency,
       budget_owner: args.budgetOwner,
       vendors: args.vendors,
+      selected_vendor_id: args.selectedVendorId,
       contract_required: args.contractRequired,
       data_access: args.dataAccess,
       system_access: args.systemAccess,
@@ -232,6 +307,9 @@ export const buildProcurementWorkflowTool = tool({
       regulated_domain: args.regulatedDomain,
       administrative_review_only: args.administrativeReviewOnly,
       legal_compliance_review_id: args.legalComplianceReviewId,
+      security_review_id: args.securityReviewId,
+      contract_id: args.contractId,
+      purchase_order_id: args.purchaseOrderId,
       controlled_goods: args.controlledGoods,
       defense_related: args.defenseRelated,
       weapons_related: args.weaponsRelated,
@@ -245,7 +323,7 @@ export const buildProcurementWorkflowTool = tool({
 
 export const queueControlledActionTool = tool({
   name: 'queue_controlled_action',
-  description: 'Request explicit human authorization for an external side-effect action. Approval only records authorization intent; this tool never performs the external action.',
+  description: 'Request explicit human authorization for an external side-effect action. Approval records authorization intent only; this tool never performs the external action.',
   parameters: z.object({
     actionType: z.string().min(1),
     repository: z.string().min(1),
@@ -258,13 +336,36 @@ export const queueControlledActionTool = tool({
     const context = getContext(runContext as RunContext<MetaAgentContext>);
     requireAuthorizedRepository(context, args.repository);
     const policyDecision = classifyAction(args.actionType, {});
-    if (policyDecision.blocked) {
-      throw new Error(`Hard-blocked action cannot be authorized: ${String(policyDecision.reason)}`);
+    if (policyDecision.blocked) throw new Error(`Hard-blocked action cannot be authorized: ${String(policyDecision.reason)}`);
+
+    const packet = await loadAndValidateApprovalPacket(context, args);
+    const approvedAt = new Date().toISOString();
+    const approvedPacket = {
+      ...packet,
+      status: 'approved',
+      approved_at: approvedAt,
+      approved_by_operator_id: context.operatorId,
+      approved_by_roles: context.operatorRoles,
+    };
+    await context.stateStore.put('approvalPackets', args.approvalPacketId, approvedPacket);
+
+    const queueRecords = await context.stateStore.list('approvalQueues');
+    for (const record of queueRecords) {
+      const queue = asRecord(record.value, 'Approval queue');
+      if (queue.approval_id !== args.approvalPacketId) continue;
+      await context.stateStore.put('approvalQueues', record.id, {
+        ...queue,
+        status: 'approved',
+        approved_roles: Array.from(new Set([...(queue.approved_roles ?? []), ...context.operatorRoles])),
+        updated_at: approvedAt,
+      });
     }
+
     const event = {
-      event_id: stableId('audit', { ...args, operatorId: context.operatorId }),
+      event_id: stableId('audit', { ...args, operatorId: context.operatorId, approvedAt }),
       event_type: 'controlled_action_authorization_recorded',
       operator_id: context.operatorId,
+      operator_roles: context.operatorRoles,
       action_type: args.actionType,
       repository: args.repository,
       exact_action: args.exactAction,
@@ -272,7 +373,7 @@ export const queueControlledActionTool = tool({
       environment: args.environment,
       execution_status: 'not_executed',
       external_side_effect_executed: false,
-      recorded_at: new Date().toISOString(),
+      recorded_at: approvedAt,
     };
     await context.stateStore.put('auditEvents', event.event_id, event);
     return event;
@@ -283,6 +384,7 @@ export const coreMetaTools = [
   getPolicySummaryTool,
   classifyActionTool,
   getPortfolioRegistryTool,
+  getControlPlaneSnapshotTool,
   buildTaskWorkflowTool,
   buildPortfolioRoutingPlanTool,
   buildProcurementWorkflowTool,
