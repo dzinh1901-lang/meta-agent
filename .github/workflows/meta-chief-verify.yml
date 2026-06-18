@@ -40,10 +40,10 @@ jobs:
       - name: Run Phase 3 packet tests
         run: npm run test:phase3
 
-      - name: Run Phase 4 routing and procurement tests
+      - name: Run Phase 4 routing, procurement, and specialist tests
         id: phase4
         continue-on-error: true
-        run: npm run test:phase4 > phase4.log 2>&1
+        run: (npm run test:phase4 && npm run test:phase4:specialists) > phase4.log 2>&1
 
       - name: Report Phase 4 diagnostics
         if: steps.phase4.outcome == 'failure' && github.event_name == 'pull_request'
@@ -52,7 +52,7 @@ jobs:
           script: |
             const fs = require('node:fs');
             const log = fs.readFileSync('meta-chief-of-staff-agent/phase4.log', 'utf8');
-            const tail = log.split('\n').slice(-80).join('\n');
+            const tail = log.split('\n').slice(-100).join('\n');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
