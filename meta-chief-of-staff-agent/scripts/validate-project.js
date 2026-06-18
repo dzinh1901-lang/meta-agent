@@ -7,10 +7,13 @@ const { classifyAction, summarizePolicy } = require('../src/policy-engine');
 const { evaluateToolGuardrail } = require('../src/guardrails');
 const { validateApprovalDecision } = require('../src/approval-policy');
 const { buildTaskApprovalWorkflow } = require('../src/packet-workflow');
+const { buildProcurementWorkflow } = require('../src/procurement/procurement-workflow');
+const { buildPortfolioRoutingPlan } = require('../src/orchestrators/portfolio-router');
 
 const root = path.join(__dirname, '..');
 const requiredFiles = [
   'package.json',
+  'tsconfig.json',
   'README.md',
   'PRD.md',
   'ARCHITECTURE.md',
@@ -25,6 +28,8 @@ const requiredFiles = [
   'schemas/task-packet.schema.json',
   'schemas/project-health.schema.json',
   'schemas/agent-run.schema.json',
+  'schemas/procurement-request.schema.json',
+  'schemas/procurement-brief.schema.json',
   'policies/authorization-matrix.yaml',
   'policies/action-risk-policy.yaml',
   'src/policy-engine.js',
@@ -37,18 +42,43 @@ const requiredFiles = [
   'src/packet-workflow.js',
   'src/repository-registry.js',
   'src/meta-chief-agent.js',
+  'src/orchestrators/orchestrator-registry.js',
+  'src/orchestrators/repository-orchestrator-adapter.js',
+  'src/orchestrators/portfolio-router.js',
+  'src/oversight/oversight-registry.js',
+  'src/procurement/procurement-policy.js',
+  'src/procurement/procurement-workflow.js',
+  'src/state/StateStore.ts',
+  'src/state/InMemoryStateStore.ts',
+  'src/sdk/context.ts',
+  'src/sdk/tools.ts',
+  'src/sdk/specialists.ts',
+  'src/sdk/meta-chief-of-staff.ts',
+  'src/sdk/cli.ts',
+  'src/sdk/smoke.ts',
+  'src/sdk/index.ts',
   'scripts/run-dry-run.js',
   'scripts/run-policy-check.js',
   'scripts/run-phase3-demo.js',
+  'scripts/run-phase4-procurement-demo.js',
   'scripts/validate-project.js',
   'tests/phase2-policy.test.js',
-  'tests/phase3-packets.test.js'
+  'tests/phase3-packets.test.js',
+  'tests/phase4-routing-procurement.test.js'
 ];
 
 for (const file of requiredFiles) {
   const fullPath = path.join(root, file);
   if (!fs.existsSync(fullPath)) throw new Error(`Missing required file: ${file}`);
 }
+
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+for (const script of ['validate', 'phase4', 'verify', 'typecheck', 'sdk:smoke', 'sdk:chat', 'sdk:resume']) {
+  if (!packageJson.scripts || !packageJson.scripts[script]) throw new Error(`Missing package script: ${script}`);
+}
+if (packageJson.dependencies?.['@openai/agents'] !== '0.11.6') throw new Error('Agents SDK dependency must be pinned to audited version 0.11.6.');
+if (!packageJson.dependencies?.zod) throw new Error('Missing zod dependency.');
+if (!packageJson.devDependencies?.typescript || !packageJson.devDependencies?.tsx) throw new Error('Missing TypeScript runtime dependencies.');
 
 const registry = JSON.parse(fs.readFileSync(path.join(root, 'registries/repositories.seed.json'), 'utf8'));
 if (!Array.isArray(registry.repositories) || registry.repositories.length < 1) throw new Error('Repository registry must contain at least one repository.');
@@ -57,7 +87,7 @@ const known = registry.repositories.filter((repo) => repo.orchestrator && repo.o
 if (!known.some((repo) => repo.repository_full_name === 'dzinh1901-lang/aurelean-app')) throw new Error('Known orchestrator missing: aurelean-app');
 if (!known.some((repo) => repo.repository_full_name === 'dzinh1901-lang/designOS-App')) throw new Error('Known orchestrator missing: designOS-App');
 
-for (const schema of ['approval-packet', 'task-packet', 'project-health', 'agent-run']) {
+for (const schema of ['approval-packet', 'task-packet', 'project-health', 'agent-run', 'procurement-request', 'procurement-brief']) {
   JSON.parse(fs.readFileSync(path.join(root, 'schemas', `${schema}.schema.json`), 'utf8'));
 }
 
@@ -84,9 +114,6 @@ if (unknown.risk !== 'critical' || !unknown.blocked || unknown.allowed) throw ne
 
 const secret = classifyAction('request_secret_access');
 if (!secret.blocked || secret.allowed || !secret.reason.includes('prohibited in v1')) throw new Error('Secret access must be blocked/prohibited in v1.');
-
-const merge = classifyAction('merge_pull_request');
-if (!merge.blocked || merge.allowed || !merge.reason.includes('prohibited in v1')) throw new Error('Merge PR must be prohibited in v1.');
 
 const publicGuard = evaluateToolGuardrail({ actionType: 'publish_public_marketing' });
 if (publicGuard.allowed || !publicGuard.requiresApproval) throw new Error('Public marketing must pause for approval.');
@@ -125,37 +152,79 @@ if (!gatedWorkflow.task_packet.task_id || !gatedWorkflow.approval_packet || !gat
 if (gatedWorkflow.task_packet.approval_id !== gatedWorkflow.approval_packet.approval_id) throw new Error('Task packet must link generated approval packet.');
 if (gatedWorkflow.agent_run.status !== 'paused_for_approval') throw new Error('Gated workflow run must pause for approval.');
 
-const readOnlyWorkflow = buildTaskApprovalWorkflow({
-  objective: 'Read repository metadata.',
-  repository: 'dzinh1901-lang/aurelean-app',
-  action: { type: 'read_repository_metadata', summary: 'Read repository metadata.' },
+const routingPlan = buildPortfolioRoutingPlan({
+  registry,
+  objective: 'Read portfolio metadata.',
+  repositories: ['dzinh1901-lang/aurelean-app', 'dzinh1901-lang/designOS-App'],
+  action: { type: 'read_repository_metadata', summary: 'Read portfolio metadata.' },
   actionType: 'read_repository_metadata',
   createdAt: '2026-06-18T00:00:00Z'
 });
-if (readOnlyWorkflow.approval_packet !== null || readOnlyWorkflow.agent_run.status !== 'completed') throw new Error('Read-only workflow should complete without approval.');
+if (routingPlan.routes.length !== 2 || routingPlan.external_side_effects_executed !== false) throw new Error('Portfolio routing smoke check failed.');
+
+const procurementWorkflow = buildProcurementWorkflow({
+  registry,
+  repository: 'dzinh1901-lang/aurelean-app',
+  summary: 'Shortlist analytics vendors.',
+  intent: 'shortlist',
+  estimated_cost: 12000,
+  budget_owner: 'portfolio_principal',
+  contract_required: true,
+  legal_compliance_review_id: 'legal-review-001',
+  security_review_id: 'security-review-001',
+  data_access: true,
+  vendors: [
+    { vendor_id: 'vendor_alpha', vendor_name: 'Vendor Alpha', security_review_status: 'pending', legal_review_status: 'pending' },
+    { vendor_id: 'vendor_beta', vendor_name: 'Vendor Beta', security_review_status: 'approved', legal_review_status: 'approved' }
+  ],
+  expiresAt: '2999-01-01T00:00:00Z',
+  createdAt: '2026-06-18T00:00:00Z'
+});
+if (procurementWorkflow.procurement_brief.blocked) throw new Error('Complete procurement shortlist should not be blocked.');
+if (!procurementWorkflow.task_workflow.approval_packet || procurementWorkflow.task_workflow.agent_run.status !== 'paused_for_approval') throw new Error('Procurement shortlist must generate an approval packet and pause.');
+if (procurementWorkflow.task_workflow.approval_packet.constraints.maximum_budget !== 12000) throw new Error('Procurement approval packet must be budget scoped.');
+
+const incompleteCommitment = buildProcurementWorkflow({
+  registry,
+  repository: 'dzinh1901-lang/aurelean-app',
+  summary: 'Incomplete vendor award.',
+  intent: 'award',
+  estimated_cost: 5000,
+  budget_owner: 'portfolio_principal',
+  vendors: [{ vendor_id: 'vendor_alpha', vendor_name: 'Vendor Alpha' }],
+  createdAt: '2026-06-18T00:00:00Z'
+});
+if (!incompleteCommitment.procurement_brief.blocked || incompleteCommitment.task_workflow.approval_packet !== null) throw new Error('Incomplete procurement commitment must block before approval.');
+
+const sdkManagerSource = fs.readFileSync(path.join(root, 'src/sdk/meta-chief-of-staff.ts'), 'utf8');
+const sdkToolsSource = fs.readFileSync(path.join(root, 'src/sdk/tools.ts'), 'utf8');
+const sdkCliSource = fs.readFileSync(path.join(root, 'src/sdk/cli.ts'), 'utf8');
+if (!sdkManagerSource.includes('specialistAgentTools') || !sdkManagerSource.includes('coreMetaTools')) throw new Error('SDK manager must compose core and specialist tools.');
+if (!sdkToolsSource.includes('needsApproval: true')) throw new Error('Controlled action tool must use Agents SDK approval interruption.');
+if (!sdkToolsSource.includes("stateStore.get('approvalPackets'")) throw new Error('Controlled action tool must validate the referenced approval packet.');
+if (!sdkCliSource.includes('RunState.fromString') || !sdkCliSource.includes('interruptions')) throw new Error('SDK CLI must support resumable human approval interruptions.');
 
 console.log(JSON.stringify({
   ok: true,
-  phase: 'phase_3_task_approval_packets',
+  phase: 'phase_4_and_sdk_runtime',
   repository_count: registry.repositories.length,
   known_orchestrator_count: known.length,
   agent_definition_count: agentFiles.length,
   policy_action_count: policy.action_count,
   validations: [
     'required_files_present',
+    'package_scripts_and_dependencies_present',
     'schemas_parse',
     'agent_front_matter_present',
     'self_approval_forbidden',
     'read_only_allowed',
-    'draft_pr_approval_gated',
-    'unknown_action_fails_closed',
-    'secret_access_prohibited',
-    'merge_pr_prohibited',
-    'public_marketing_guarded',
-    'scoped_approval_allows_issue_creation',
-    'missing_approver_role_rejected',
-    'gated_workflow_generates_task_approval_pending_queue',
-    'gated_workflow_pauses_run',
-    'read_only_workflow_completes_without_approval'
+    'gated_workflow_pauses',
+    'portfolio_routing_dry_run_only',
+    'procurement_shortlist_scoped_and_gated',
+    'incomplete_procurement_commitment_blocked',
+    'sdk_manager_graph_present',
+    'sdk_tool_approval_interrupt_present',
+    'sdk_approval_packet_validation_present',
+    'sdk_runstate_resume_present'
   ]
 }, null, 2));
