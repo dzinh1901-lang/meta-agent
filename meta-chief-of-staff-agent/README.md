@@ -30,56 +30,56 @@ meta-chief-of-staff-agent/
 ├── GOVERNANCE-AUTHORIZATIONS.md
 ├── RISK-REGISTER.md
 ├── agents/
-│   ├── meta-chief-of-staff-agent.md
-│   ├── cross-repository-orchestrator.md
-│   ├── procurement-oversight-agent.md
-│   ├── marketing-oversight-agent.md
-│   ├── finance-ops-agent.md
-│   ├── security-compliance-agent.md
-│   └── audit-evidence-agent.md
 ├── docs/
 │   ├── human-in-the-loop.md
 │   ├── integration-blueprint.md
 │   ├── operating-cadence.md
-│   └── repository-inventory.md
+│   ├── repository-inventory.md
+│   └── PHASE-2-RISK-POLICY-ENFORCEMENT.md
 ├── policies/
 │   ├── authorization-matrix.yaml
 │   └── action-risk-policy.yaml
 ├── registries/
 │   └── repositories.seed.json
 ├── schemas/
-│   ├── approval-packet.schema.json
-│   ├── task-packet.schema.json
-│   ├── project-health.schema.json
-│   └── agent-run.schema.json
 ├── examples/
-│   ├── approval-packet.example.json
-│   ├── task-packet.example.json
-│   └── project-health.example.json
 ├── src/
 │   ├── approval-packet-builder.js
+│   ├── approval-policy.js
+│   ├── guardrails.js
 │   ├── meta-chief-agent.js
 │   ├── policy-engine.js
 │   └── repository-registry.js
 ├── scripts/
 │   ├── run-dry-run.js
+│   ├── run-policy-check.js
 │   └── validate-project.js
+├── tests/
+│   └── phase2-policy.test.js
 └── package.json
 ```
 
-## First Local Commands
+## Local Commands
 
 ```bash
 npm run validate
 npm run dry-run
+npm run policy:check
+npm run test:phase2
+npm run phase2
 ```
 
-The included JavaScript is intentionally deterministic and dependency-free. It validates that the design package is coherent, loads the repository registry, classifies requested actions by risk, and produces approval packets where human authorization is required.
+The included JavaScript is deterministic and dependency-free. It validates that the design package is coherent, loads the repository registry, classifies actions by risk, enforces guardrails, validates scoped approvals, and produces approval packets where human authorization is required.
+
+## Current Build Status
+
+- Phase 0 scaffold: complete.
+- Phase 1 read-only discovery design target: defined in roadmap/docs.
+- Phase 2 risk and policy enforcement: implemented in `src/policy-engine.js`, `src/guardrails.js`, `src/approval-policy.js`, and `tests/phase2-policy.test.js`.
 
 ## Immediate Next Commit Target
 
-1. Commit this folder as a standalone repository or under a parent `agentops-runtime` / `designos-orchestrator-v2` workspace.
-2. Run read-only repository discovery against every visible GitHub repository.
-3. Create one project-health record per repository.
-4. Add adapter records for known orchestrators: AURELEAN and DesignOS.
-5. Keep write, procurement, live-service, billing, marketing-publication, and regulated-domain actions blocked until explicit human authorization exists.
+1. Add typed task packet and approval packet builders.
+2. Add pending approval queue records.
+3. Add run-state transitions for pause/resume.
+4. Keep write, procurement, live-service, billing, marketing-publication, and regulated-domain actions blocked until explicit human authorization exists.
