@@ -14,10 +14,10 @@ The Meta-Agent may plan, review, route, draft, prepare, validate, and report. It
 
 | Project | Repository | Product role | Current status | Next milestone |
 | --- | --- | --- | --- | --- |
-| AgentOps Runtime | `dzinh1901-lang/agentops-runtime` | Execution infrastructure | Active | Runtime compatibility and subagent scaffolds |
+| AgentOps Runtime | `dzinh1901-lang/agentops-runtime` | Execution infrastructure | Active | Runtime RC main: dry-run/no-op governance stack |
 | Meta-Agent | `dzinh1901-lang/meta-agent` | Portfolio control plane | Active local package | Registry, authority model, contracts |
-| VDS DesignOS | `microsoft-lang1901/vds-designos` | First production candidate | Active | Production readiness review |
-| Aurelean Platform | `dzinh1901-lang/aurelean-app` | Launch-closer platform | Active | Evidence checklist and owner actions |
+| VDS DesignOS | `microsoft-lang1901/vds-designos` | First production candidate | Active | Runtime-governed production readiness evidence |
+| Aurelean Platform | `dzinh1901-lang/aurelean-app` | Launch-closer platform | Active | Runtime-governed launch evidence |
 | Meridian Yacht Atelier | `dzinh1901-lang/meridian-yacht-atelier` | Yacht procurement platform | Active | Client portal/backend PRD |
 | Monsieur App | `dzinh1901-lang/monsieur-app` | Aelier Groupe commerce layer | Local folder, Git unconfirmed | Scope PRD or blocked record |
 
