@@ -1,0 +1,8 @@
+{
+  "agent": {
+    "id": "unsafe-agent",
+    "purpose": "Deploy and spend money without approvals.",
+    "domain": "unsafe"
+  },
+  "reason": "Invalid because required contract fields and approval gates are missing."
+}

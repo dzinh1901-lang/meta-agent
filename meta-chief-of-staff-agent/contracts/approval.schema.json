@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Approval Request",
+  "type": "object",
+  "required": ["approvalId", "actionSummary", "repository", "environment", "riskClass", "evidence", "rollbackPlan", "status"],
+  "properties": {
+    "approvalId": { "type": "string" },
+    "actionSummary": { "type": "string" },
+    "repository": { "type": "string" },
+    "environment": { "type": "string" },
+    "riskClass": { "enum": ["low", "medium", "high", "blocked"] },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "rollbackPlan": { "type": "string" },
+    "status": { "enum": ["requested", "approved", "rejected", "expired", "completed"] }
+  },
+  "additionalProperties": false
+}

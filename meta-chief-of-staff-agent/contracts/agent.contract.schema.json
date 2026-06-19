@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Contract",
+  "type": "object",
+  "required": ["id", "purpose", "domain", "workflowOwnership", "inputs", "outputs", "memoryAccess", "toolAccess", "platformAccess", "skills", "approvalGates", "failureModes", "evals"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "domain": { "type": "string", "minLength": 1 },
+    "workflowOwnership": { "type": "array", "items": { "type": "string" } },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "memoryAccess": { "type": "string" },
+    "toolAccess": { "type": "array", "items": { "type": "string" } },
+    "platformAccess": { "type": "array", "items": { "type": "string" } },
+    "skills": { "type": "array", "items": { "type": "string" } },
+    "structuredOutputSchemas": { "type": "array", "items": { "type": "string" } },
+    "approvalGates": { "type": "array", "items": { "type": "string" } },
+    "failureModes": { "type": "array", "items": { "type": "string" } },
+    "evals": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Portfolio Task",
+  "type": "object",
+  "required": ["taskId", "repository", "agentId", "actionClass", "objective", "inputs", "approvalRequired"],
+  "properties": {
+    "taskId": { "type": "string" },
+    "repository": { "type": "string" },
+    "agentId": { "type": "string" },
+    "actionClass": { "enum": ["recommend-only", "draft-only", "executable", "blocked"] },
+    "objective": { "type": "string" },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "approvalRequired": { "type": "boolean" },
+    "evidenceRequired": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}

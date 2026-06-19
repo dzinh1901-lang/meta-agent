@@ -78,6 +78,20 @@ npm run phase2
 npm run phase3
 ```
 
+## Portfolio Control Plane
+
+- [Portfolio registry](docs/PORTFOLIO-REGISTRY.md)
+- [Project status matrix](docs/PROJECT-STATUS-MATRIX.md)
+- [Portfolio blockers](docs/PORTFOLIO-BLOCKERS.md)
+- [Meta-Agent PRD](docs/META-AGENT-PRD.md)
+- [Authority model](docs/AUTHORITY-MODEL.md)
+- [Approval gates](docs/APPROVAL-GATES.md)
+- [Agent hierarchy](docs/AGENT-HIERARCHY.md)
+- [Agent contract standard](docs/AGENT-CONTRACT-STANDARD.md)
+- [Cross-repo orchestration map](docs/CROSS-REPO-ORCHESTRATION-MAP.md)
+- [Governance validation](docs/GOVERNANCE-VALIDATION.md)
+- [Weekly portfolio report template](templates/WEEKLY-PORTFOLIO-REPORT.md)
+
 ### Monitoring Dashboard (`npm run monitor`)
 
 Use `npm run monitor` to render a local oversight view from state records:

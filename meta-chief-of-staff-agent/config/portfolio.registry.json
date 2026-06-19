@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedBy": "Portfolio Control Plane",
+  "statusDate": "2026-06-20",
+  "operatingRule": "Do not make production-risk changes without explicit owner approval.",
+  "projects": [
+    {
+      "id": "agentops-runtime",
+      "name": "AgentOps Runtime",
+      "repository": "dzinh1901-lang/agentops-runtime",
+      "localPath": "C:/Users/dzinh/Downloads/agent-ops/agentops-runtime",
+      "role": "Execution infrastructure for governed agents, skills, approval gates, traces, and evidence return.",
+      "status": "active",
+      "currentMilestone": "Meta-Agent integration compatibility layer and first subagent scaffolds.",
+      "owner": "Portfolio Owner",
+      "riskLevel": "medium",
+      "productionReadiness": "scaffold-ready",
+      "dependencies": ["meta-agent"],
+      "blockers": ["Confirm runtime contract adoption before executable production workflows."]
+    },
+    {
+      "id": "meta-agent",
+      "name": "Meta-Agent",
+      "repository": "dzinh1901-lang/meta-agent",
+      "localPath": "C:/Users/dzinh/Downloads/meta-agent/meta-chief-of-staff-agent",
+      "role": "Portfolio intelligence, Chief of Staff planning, routing, approvals, registry, and weekly reporting.",
+      "status": "active",
+      "currentMilestone": "Canonical registry, authority model, agent contracts, and cross-repo orchestration map.",
+      "owner": "Portfolio Owner",
+      "riskLevel": "medium",
+      "productionReadiness": "documentation-control-plane",
+      "dependencies": ["agentops-runtime"],
+      "blockers": []
+    },
+    {
+      "id": "vds-designos",
+      "name": "VDS DesignOS",
+      "repository": "microsoft-lang1901/vds-designos",
+      "localPath": "C:/Users/dzinh/Downloads/vds",
+      "role": "First production candidate and architecture studio operating system.",
+      "status": "active",
+      "currentMilestone": "Production readiness review and owner action list.",
+      "owner": "Portfolio Owner",
+      "riskLevel": "high",
+      "productionReadiness": "candidate-review-required",
+      "dependencies": ["agentops-runtime", "meta-agent"],
+      "blockers": ["Supabase, Stripe, Vercel, OpenAI live-mode, rollback, and monitoring evidence require owner confirmation."]
+    },
+    {
+      "id": "aurelean-platform",
+      "name": "Aurelean Platform",
+      "repository": "dzinh1901-lang/aurelean-app",
+      "localPath": "C:/Users/dzinh/Downloads/aurelean/Aurelean-App",
+      "role": "Launch-closer ready textile sourcing and RFQ platform.",
+      "status": "active",
+      "currentMilestone": "Launch closer checklist and non-secret evidence package.",
+      "owner": "Portfolio Owner",
+      "riskLevel": "high",
+      "productionReadiness": "launch-closer-review",
+      "dependencies": ["agentops-runtime"],
+      "blockers": ["Admin token, session secret, demo-mode, and Render production environment must be owner-provided."]
+    },
+    {
+      "id": "meridian-yacht-atelier",
+      "name": "Meridian Yacht Atelier",
+      "repository": "dzinh1901-lang/meridian-yacht-atelier",
+      "localPath": "C:/Users/dzinh/Downloads/meridian-yacht-atelier",
+      "role": "Yacht procurement, client portal, vendor management, and atelier operations platform.",
+      "status": "active",
+      "currentMilestone": "Client portal/backend PRD and procurement workflow scope.",
+      "owner": "Portfolio Owner",
+      "riskLevel": "medium",
+      "productionReadiness": "scope-definition",
+      "dependencies": ["agentops-runtime"],
+      "blockers": ["Future backend scope must be separated from current implementation."]
+    },
+    {
+      "id": "monsieur-app",
+      "name": "Monsieur App / Aelier Groupe Commerce Layer",
+      "repository": "dzinh1901-lang/monsieur-app",
+      "localPath": "C:/Users/dzinh/Downloads/Monsieur App",
+      "role": "Luxury commerce, made-to-measure, fibre passport, private client, and Stripe checkout scope.",
+      "status": "local-folder-no-git",
+      "currentMilestone": "Scope PRD or blocked record depending on repository availability.",
+      "owner": "Portfolio Owner",
+      "riskLevel": "medium",
+      "productionReadiness": "blocked-until-repo-confirmed",
+      "dependencies": ["aurelean-platform"],
+      "blockers": ["Local folder exists but is not a Git checkout; remote repository availability is unconfirmed."]
+    }
+  ]
+}

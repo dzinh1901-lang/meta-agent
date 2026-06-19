@@ -1,0 +1,28 @@
+{
+  "agent": {
+    "id": "repository-review-agent",
+    "purpose": "Audit repositories and report status without modifying production systems.",
+    "domain": "repository-analysis",
+    "workflowOwnership": ["portfolio-discovery"],
+    "inputs": ["repository path", "package metadata", "documentation tree"],
+    "outputs": ["inventory report", "blocker list"],
+    "memoryAccess": "read-only portfolio registry",
+    "toolAccess": ["local filesystem read", "local test commands"],
+    "platformAccess": ["GitHub read metadata"],
+    "skills": ["repository review", "documentation synthesis"],
+    "structuredOutputSchemas": ["evidence.schema.json"],
+    "approvalGates": ["production changes blocked"],
+    "failureModes": ["missing repo", "unknown package manager"],
+    "evals": ["inventory completeness checklist"]
+  },
+  "task": {
+    "taskId": "task-001",
+    "repository": "dzinh1901-lang/meta-agent",
+    "agentId": "documentation-agent",
+    "actionClass": "executable",
+    "objective": "Validate portfolio registry JSON.",
+    "inputs": ["config/portfolio.registry.json"],
+    "approvalRequired": false,
+    "evidenceRequired": true
+  }
+}
