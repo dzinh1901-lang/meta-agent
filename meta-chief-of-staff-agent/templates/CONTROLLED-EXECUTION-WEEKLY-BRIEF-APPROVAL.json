@@ -1,0 +1,11 @@
+{
+  "approval_id": "owner-approval-placeholder",
+  "status": "pending",
+  "owner_role": "principal_approver",
+  "pilot_id": "chief-of-staff-weekly-executive-brief",
+  "workflow_id": "controlled-weekly-brief",
+  "execution_authorization": "NOT_AUTHORIZED",
+  "live_execution_enabled": false,
+  "nonce": "single-use-owner-provided-nonce",
+  "expires_at": "REQUIRED_OWNER_SUPPLIED_EXPIRY"
+}

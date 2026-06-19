@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meta-agent.local/contracts/controlled-execution-weekly-brief-input.schema.json",
+  "title": "Controlled Execution Weekly Brief Input Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["as_of", "repositories"],
+  "properties": {
+    "as_of": { "type": "string", "format": "date-time" },
+    "repositories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["repository", "milestone_status", "certification_status"],
+        "properties": {
+          "repository": { "type": "string", "minLength": 1 },
+          "milestone_status": { "type": "string", "minLength": 1 },
+          "certification_status": { "type": "string", "minLength": 1 },
+          "blockers": { "type": "array", "items": { "type": "string" } },
+          "risks": { "type": "array", "items": { "type": "string" } },
+          "approvals_awaiting_owner_review": { "type": "array", "items": { "type": "string" } },
+          "owner_actions": { "type": "array", "items": { "type": "string" } },
+          "priority_recommendations": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

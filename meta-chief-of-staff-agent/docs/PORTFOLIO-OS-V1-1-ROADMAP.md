@@ -100,3 +100,10 @@ Recommended next milestone:
 This next milestone may implement the missing safeguards and a non-authorized pilot path for the Chief of Staff Weekly Executive Brief. It must keep execution disabled until owner approval contracts, adapter gates, kill switch behavior, path containment, audit integrity, rollback rules, and resource limits are implemented and validated.
 
 Controlled execution and live execution remain unauthorized.
+## Weekly Brief Foundation Update
+
+The next gate after review is:
+
+`codex/controlled-execution-weekly-brief-pilot-authorization`
+
+That future milestone must be a separate owner-approval and one-run gate. Live execution remains `NO-GO`.

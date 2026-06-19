@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meta-agent.local/contracts/controlled-execution-weekly-brief-output.schema.json",
+  "title": "Controlled Execution Weekly Brief Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "executive_summary",
+    "accomplishments",
+    "top_priorities",
+    "top_blockers",
+    "open_risks",
+    "owner_action_queue",
+    "approval_queue",
+    "next_milestones",
+    "certification_state",
+    "execution_authorization_state"
+  ],
+  "properties": {
+    "executive_summary": { "type": "string" },
+    "accomplishments": { "type": "array", "items": { "type": "string" } },
+    "top_priorities": { "type": "array", "items": { "type": "string" } },
+    "top_blockers": { "type": "array", "items": { "type": "string" } },
+    "open_risks": { "type": "array", "items": { "type": "string" } },
+    "owner_action_queue": { "type": "array", "items": { "type": "string" } },
+    "approval_queue": { "type": "array", "items": { "type": "string" } },
+    "next_milestones": { "type": "array", "items": { "type": "string" } },
+    "certification_state": { "type": "string" },
+    "execution_authorization_state": { "const": "NOT_AUTHORIZED" }
+  }
+}

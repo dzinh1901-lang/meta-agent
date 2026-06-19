@@ -1,0 +1,37 @@
+{
+  "policy_id": "controlled-execution-weekly-brief-policy-v1",
+  "pilot_id": "chief-of-staff-weekly-executive-brief",
+  "live_execution_enabled": false,
+  "execution_authorization": "NOT_AUTHORIZED",
+  "allowed_actions": [
+    "read approved local json snapshot",
+    "write approved local json artifacts",
+    "write approved local markdown artifact",
+    "write local audit manifest",
+    "write local rollback manifest"
+  ],
+  "prohibited_actions": [
+    "network",
+    "subprocesses",
+    "shell",
+    "tool invocation",
+    "skill invocation",
+    "llm invocation",
+    "secret reads",
+    "environment reads",
+    "database access",
+    "git writes",
+    "deployments",
+    "migrations",
+    "billing",
+    "external communications",
+    "production writes"
+  ],
+  "required_outputs": [
+    "weekly-executive-brief.json",
+    "weekly-executive-brief.md",
+    "output-manifest.json",
+    "execution-audit.json",
+    "rollback-manifest.json"
+  ]
+}

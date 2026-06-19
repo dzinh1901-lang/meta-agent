@@ -17,4 +17,8 @@ Live execution: `NO-GO`
 Portfolio OS V1.1 remains certified for governed dry-run operation.
 
 This readiness review does not authorize controlled or live execution.
+## Weekly Brief Foundation Update
 
+Recommendation status: `IMPLEMENTED_AWAITING_REVIEW`
+
+Proceed only to a separate owner-approval gate after implementation PR review. Do not run the pilot from this milestone. Execution authorization remains `NOT_AUTHORIZED`; live execution remains `NO-GO`.
