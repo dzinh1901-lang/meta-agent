@@ -47,3 +47,14 @@
 | --- | --- | --- | --- | --- | --- |
 | Meridian mapping gap | Meridian is not yet mapped into V1.1 runtime routing. | Medium | Medium | Run `codex/meridian-runtime-mapping`. | Open |
 
+## Controlled Execution Readiness Addendum
+
+| Risk | Status | Required Action |
+| --- | --- | --- |
+| Path escape or symlink write outside sandbox | Open | Implement realpath containment and symlink rejection before pilot execution. |
+| Approval replay | Open | Add nonce, expiry, task digest binding, and replay rejection tests. |
+| Kill switch not enforced by adapter | Open | Implement fail-closed kill switch checks before any controlled execution. |
+| Audit and rollback integrity | Open | Add deterministic digests and rollback manifest verification. |
+| Unbounded local output | Open | Add output size, file count, and duration limits. |
+
+Execution authorization remains `NOT_AUTHORIZED`.

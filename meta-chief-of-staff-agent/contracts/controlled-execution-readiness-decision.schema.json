@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Controlled Execution Readiness Decision",
+  "type": "object",
+  "required": ["assessmentId", "assessmentDate", "portfolioOsVersion", "repositoriesReviewed", "certificationBaselines", "selectedCandidate", "criticalControlResults", "highRiskFindings", "residualRisks", "implementationReadinessVerdict", "executionAuthorizationVerdict", "conditions", "ownerActions", "requiredFutureImplementationWork", "evidenceReferences"],
+  "properties": {
+    "assessmentId": { "type": "string" },
+    "assessmentDate": { "type": "string" },
+    "portfolioOsVersion": { "type": "string" },
+    "repositoriesReviewed": { "type": "array", "items": { "type": "string" } },
+    "certificationBaselines": { "type": "object" },
+    "selectedCandidate": { "type": "string" },
+    "criticalControlResults": { "type": "array", "items": { "type": "object" } },
+    "highRiskFindings": { "type": "array", "items": { "type": "string" } },
+    "residualRisks": { "type": "array", "items": { "type": "string" } },
+    "implementationReadinessVerdict": { "enum": ["READY", "CONDITIONALLY_READY", "NOT_READY"] },
+    "executionAuthorizationVerdict": { "const": "NOT_AUTHORIZED" },
+    "conditions": { "type": "array", "items": { "type": "string" } },
+    "ownerActions": { "type": "array", "items": { "type": "string" } },
+    "requiredFutureImplementationWork": { "type": "array", "items": { "type": "string" } },
+    "evidenceReferences": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}
+

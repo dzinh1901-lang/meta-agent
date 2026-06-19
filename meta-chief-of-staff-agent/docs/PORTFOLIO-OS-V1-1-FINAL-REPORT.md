@@ -76,3 +76,14 @@ Owner approval is required for controlled execution pilots, production targets, 
 
 `codex/controlled-execution-pilot-readiness`
 
+## Controlled Execution Readiness Addendum
+
+The controlled execution pilot readiness gate is complete.
+
+- Implementation readiness: `CONDITIONALLY_READY`
+- Execution authorization: `NOT_AUTHORIZED`
+- Selected future candidate: Chief of Staff Weekly Executive Brief
+- Live execution: `NO-GO`
+- Remaining conditions: path containment, approval replay prevention, kill switch enforcement, audit and rollback integrity, and resource/output limits
+
+Portfolio OS V1.1 remains certified for governed dry-run operation. This readiness review does not authorize controlled or live execution.

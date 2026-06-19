@@ -1,0 +1,25 @@
+{
+  "approvalId": "approval.controlled-execution.example",
+  "ownerRole": "portfolio_owner",
+  "pilotId": "chief-of-staff-weekly-brief-local-artifact",
+  "workflowId": "chief_of_staff_weekly_executive_brief",
+  "taskId": "future-task-id",
+  "taskPayloadDigest": "sha256:future-task-digest",
+  "policyVersion": "controlled-execution-pilot-policy.v1",
+  "policyDigest": "sha256:future-policy-digest",
+  "repository": "dzinh1901-lang/meta-agent",
+  "branch": "codex/controlled-execution-pilot-readiness",
+  "baselineCommitSha": "e53f91f",
+  "inputAllowlist": ["meta-chief-of-staff-agent/docs/PORTFOLIO-OS-V1-1-FINAL-REPORT.md"],
+  "outputDirectory": ".controlled-execution-pilot/output/",
+  "actionAllowlist": ["read_allowlisted_files", "generate_deterministic_markdown_json"],
+  "prohibitedActionAcknowledgement": true,
+  "maximumResourceLimits": { "maximumOutputFiles": 2, "maximumOutputBytes": 100000 },
+  "approvalIssueTime": "2026-06-20T00:00:00.000Z",
+  "approvalExpiryTime": "2026-06-21T00:00:00.000Z",
+  "singleUseNonce": "nonce.future.owner.supplied",
+  "approvalStatus": "pending",
+  "revocationStatus": "not_revoked",
+  "ownerSignatureReference": "future-owner-signature-reference"
+}
+

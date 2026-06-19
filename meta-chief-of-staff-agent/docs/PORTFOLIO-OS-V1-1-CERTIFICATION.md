@@ -96,3 +96,10 @@ NO-GO:
 - External communications
 - Autonomous approvals
 
+## Controlled Execution Readiness Addendum
+
+The controlled execution pilot readiness assessment has been completed with implementation readiness `CONDITIONALLY_READY` and execution authorization `NOT_AUTHORIZED`.
+
+The selected future candidate is the Chief of Staff Weekly Executive Brief. This candidate may proceed only to a future implementation-planning milestone after the documented conditions are resolved.
+
+Portfolio OS V1.1 remains certified for governed dry-run operation. This readiness review does not authorize controlled or live execution.

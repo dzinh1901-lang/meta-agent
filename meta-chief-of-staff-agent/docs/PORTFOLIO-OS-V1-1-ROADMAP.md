@@ -91,3 +91,12 @@ Deliverables: V2 architecture, governance, roadmap, certification criteria.
 Dependencies: Production readiness certification.
 Exit Criteria: V2 plan accepted.
 
+## Controlled Execution Readiness Addendum
+
+Recommended next milestone:
+
+`codex/controlled-execution-weekly-brief-pilot-implementation`
+
+This next milestone may implement the missing safeguards and a non-authorized pilot path for the Chief of Staff Weekly Executive Brief. It must keep execution disabled until owner approval contracts, adapter gates, kill switch behavior, path containment, audit integrity, rollback rules, and resource limits are implemented and validated.
+
+Controlled execution and live execution remain unauthorized.
