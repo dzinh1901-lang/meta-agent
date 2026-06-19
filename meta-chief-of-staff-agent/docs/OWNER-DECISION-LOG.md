@@ -7,3 +7,4 @@
 | 2026-06-20 | Approve VDS production readiness evidence collection | Open | No deployment requested |
 | 2026-06-20 | Approve Aurelean launch evidence collection | Open | No secret values requested |
 | 2026-06-20 | Approve Meridian backend implementation phase | Open | Scope docs only so far |
+| 2026-06-20 | Approve move from dry-run runtime to controlled execution implementation | Open | AgentOps Runtime RC stack is merged and validated; live execution remains disabled |

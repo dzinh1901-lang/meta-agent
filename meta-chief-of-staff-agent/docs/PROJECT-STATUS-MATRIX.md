@@ -3,12 +3,12 @@
 | Project | Local path status | Git status | Package manager | Safe next task | Owner-blocked items |
 | --- | --- | --- | --- | --- | --- |
 | Meta-Agent | Exists | Git checkout on `main` | npm | Keep governance docs and validators current | None |
-| AgentOps Runtime | Exists | Git checkout on `codex/head-meta-agent-runtime` | pnpm/npm | Add runtime integration docs and subagent scaffolds | Production execution approval |
-| VDS DesignOS | Exists | Git checkout on `agents/codex-orchestrator-subagents` | npm | Add readiness docs | Live Supabase, Stripe, Vercel, OpenAI confirmation |
-| Aurelean App | Exists | Git checkout on `main` | npm | Add launch closer docs | Admin/session secrets and Render envs |
+| AgentOps Runtime | Exists | `main` includes runtime RC stack through `79b9f6d`; status report PR #39 open | pnpm/npm | Use dry-run runtime evidence for portfolio governance | Live execution owner approval and controlled execution implementation |
+| VDS DesignOS | Exists | Canonical checkout at `C:/Users/dzinh/Downloads/vds` | npm | Route readiness evidence through dry-run runtime governance | Live Supabase, Stripe, Vercel, OpenAI confirmation |
+| Aurelean App | Exists | Canonical checkout at `C:/Users/dzinh/Downloads/aurelean/Aurelean-App` | npm | Route launch evidence through dry-run runtime governance | Admin/session secrets and Render envs |
 | Meridian Yacht Atelier | Exists | Git checkout on `main` | pnpm/npm | Add platform scope docs | Backend scope approval |
 | Monsieur App | Exists | No local Git checkout | npm | Add local scope docs only | Confirm canonical repository |
 
 ## Portfolio Status
 
-The portfolio is ready for documentation and scaffolding phases. Production-affecting execution remains blocked until the owner approves the specific action, target repository, environment, and rollback plan.
+The portfolio is connected through the AgentOps dry-run runtime RC stack. Production-affecting execution remains blocked until the owner approves the specific action, target repository, environment, rollback plan, and a separate controlled execution implementation.

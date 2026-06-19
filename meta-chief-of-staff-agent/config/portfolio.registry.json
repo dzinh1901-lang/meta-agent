@@ -11,12 +11,12 @@
       "localPath": "C:/Users/dzinh/Downloads/agent-ops/agentops-runtime",
       "role": "Execution infrastructure for governed agents, skills, approval gates, traces, and evidence return.",
       "status": "active",
-      "currentMilestone": "Meta-Agent integration compatibility layer and first subagent scaffolds.",
+      "currentMilestone": "Runtime RC stack merged to main; dry-run/no-op runtime supports intake, routing, approvals, traces, sandbox, readiness validation, audit packages, and RC review.",
       "owner": "Portfolio Owner",
       "riskLevel": "medium",
-      "productionReadiness": "scaffold-ready",
+      "productionReadiness": "dry-run-runtime-rc-main",
       "dependencies": ["meta-agent"],
-      "blockers": ["Confirm runtime contract adoption before executable production workflows."]
+      "blockers": ["Live execution remains disabled; owner-approved controlled execution implementation is required before any real skill or tool execution."]
     },
     {
       "id": "meta-agent",
@@ -25,12 +25,12 @@
       "localPath": "C:/Users/dzinh/Downloads/meta-agent/meta-chief-of-staff-agent",
       "role": "Portfolio intelligence, Chief of Staff planning, routing, approvals, registry, and weekly reporting.",
       "status": "active",
-      "currentMilestone": "Canonical registry, authority model, agent contracts, and cross-repo orchestration map.",
+      "currentMilestone": "Portfolio runtime integration status tracks AgentOps Runtime RC main and downstream VDS/Aurelean readiness gates.",
       "owner": "Portfolio Owner",
       "riskLevel": "medium",
       "productionReadiness": "documentation-control-plane",
       "dependencies": ["agentops-runtime"],
-      "blockers": []
+      "blockers": ["Keep runtime integration evidence current as AgentOps Runtime PRs land."]
     },
     {
       "id": "vds-designos",
@@ -39,12 +39,12 @@
       "localPath": "C:/Users/dzinh/Downloads/vds",
       "role": "First production candidate and architecture studio operating system.",
       "status": "active",
-      "currentMilestone": "Production readiness review and owner action list.",
+      "currentMilestone": "Production readiness remains routed through AgentOps dry-run runtime evidence and owner approval gates.",
       "owner": "Portfolio Owner",
       "riskLevel": "high",
       "productionReadiness": "candidate-review-required",
       "dependencies": ["agentops-runtime", "meta-agent"],
-      "blockers": ["Supabase, Stripe, Vercel, OpenAI live-mode, rollback, and monitoring evidence require owner confirmation."]
+      "blockers": ["Supabase, Stripe, Vercel, OpenAI live-mode, rollback, and monitoring evidence require owner confirmation; live runtime execution is not enabled."]
     },
     {
       "id": "aurelean-platform",
@@ -53,12 +53,12 @@
       "localPath": "C:/Users/dzinh/Downloads/aurelean/Aurelean-App",
       "role": "Launch-closer ready textile sourcing and RFQ platform.",
       "status": "active",
-      "currentMilestone": "Launch closer checklist and non-secret evidence package.",
+      "currentMilestone": "Launch closer checklist remains governed by AgentOps dry-run runtime evidence and owner approval gates.",
       "owner": "Portfolio Owner",
       "riskLevel": "high",
       "productionReadiness": "launch-closer-review",
       "dependencies": ["agentops-runtime"],
-      "blockers": ["Admin token, session secret, demo-mode, and Render production environment must be owner-provided."]
+      "blockers": ["Admin token, session secret, demo-mode, and Render production environment must be owner-provided; live runtime execution is not enabled."]
     },
     {
       "id": "meridian-yacht-atelier",

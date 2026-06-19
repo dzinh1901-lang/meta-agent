@@ -4,6 +4,8 @@
 
 Implemented a documentation-first, schema-backed portfolio control plane across Meta-Agent, AgentOps Runtime, VDS, Aurelean, Meridian, and local Monsieur scope files.
 
+Updated the control plane after AgentOps Runtime RC stack merge. The runtime now provides dry-run intake, routing, approvals, traces, sandbox simulation, readiness validation, audit packaging, and RC review on `main` while live execution remains disabled.
+
 ## Repositories Touched
 
 - Meta-Agent local package
@@ -21,4 +23,4 @@ See final task output for command results. Validators were added for registry, c
 
 - Monsieur local folder is not a Git checkout.
 - Production readiness requires owner evidence and approval.
-- No pushes were performed.
+- Live runtime execution requires a separate owner-approved controlled execution implementation.
