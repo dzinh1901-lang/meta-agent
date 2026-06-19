@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "active",
+  "sourceOfTruthRepository": "dzinh1901-lang/meta-agent",
+  "sourceOfTruthPath": "meta-chief-of-staff-agent/config/github.operating-protocol.json",
+  "runtimeImplementationRepository": "dzinh1901-lang/agentops-runtime",
+  "runtimeImplementationBranch": "codex/real-agent-execution-runtime",
+  "defaultProtocol": {
+    "pushPolicy": "do_not_push_without_explicit_instruction",
+    "deploymentPolicy": "do_not_deploy_from_portfolio_tasks",
+    "secretsPolicy": "do_not_edit_or_expose_secrets",
+    "productionPolicy": "do_not_change_production_settings_without_owner_approval",
+    "migrationPolicy": "do_not_apply_database_migrations_without_owner_approval",
+    "externalApiPolicy": "do_not_call_external_apis_from_runtime_slices"
+  },
+  "standardSteps": [
+    "resolve_canonical_repository",
+    "confirm_branch_and_remote",
+    "inspect_worktree_status",
+    "separate_unrelated_dirty_changes",
+    "derive_meta_agent_task_packet",
+    "classify_approval_and_blocked_policy",
+    "route_to_agentops_runtime_for_implementation",
+    "run_repository_validations",
+    "commit_task_scoped_changes_locally",
+    "prepare_push_or_pr_only_when_explicitly_instructed",
+    "return_evidence_and_blockers"
+  ],
+  "repositoryRoles": [
+    {
+      "repository": "dzinh1901-lang/meta-agent",
+      "role": "source_of_truth_control_plane",
+      "allowedActions": ["registry_update", "protocol_update", "authority_model_update", "evidence_policy_update"],
+      "defaultBranchPolicy": "main_requires_clean_local_commit_before_push"
+    },
+    {
+      "repository": "dzinh1901-lang/agentops-runtime",
+      "role": "active_runtime_implementation_target",
+      "allowedActions": ["runtime_slice", "schema_update", "test_fixture_update", "local_trace_scaffold"],
+      "defaultBranchPolicy": "feature_branch_before_runtime_changes"
+    }
+  ],
+  "blockedByDefault": [
+    "deployments",
+    "secret_changes",
+    "billing_or_payment_changes",
+    "database_migrations",
+    "production_setting_changes",
+    "external_communications",
+    "push_without_explicit_instruction"
+  ],
+  "requiredEvidence": [
+    "repository",
+    "branch",
+    "remote_origin",
+    "worktree_status",
+    "files_changed",
+    "validation_commands",
+    "test_results",
+    "commit_hash",
+    "unrelated_changes_left_untouched",
+    "blocked_items",
+    "recommended_next_task"
+  ]
+}
