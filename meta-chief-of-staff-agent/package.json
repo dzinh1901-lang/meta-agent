@@ -9,6 +9,7 @@
     "dry-run": "node scripts/run-dry-run.js",
     "policy:check": "node scripts/run-policy-check.js",
     "protocol:github": "node scripts/validate-github-operating-protocol.js",
+    "certification:validate": "node scripts/validate-portfolio-certification.js",
     "packet:demo": "node scripts/run-phase3-demo.js",
     "monitor": "node scripts/phase7-monitor-dashboard.js",
     "phase8": "node scripts/phase8-production-operations.js",
