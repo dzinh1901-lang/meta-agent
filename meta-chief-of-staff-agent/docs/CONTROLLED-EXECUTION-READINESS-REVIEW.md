@@ -51,4 +51,8 @@ Approve future implementation scope only after reviewing conditions. Do not auth
 ## Next Milestone Recommendation
 
 `codex/controlled-execution-weekly-brief-pilot-implementation`
+## Weekly Brief Foundation Update
 
+Implementation status: `IMPLEMENTED_AWAITING_REVIEW`
+
+The controlled weekly brief foundation has been defined for future owner review. Execution authorization remains `NOT_AUTHORIZED`; live execution remains `NO-GO`.

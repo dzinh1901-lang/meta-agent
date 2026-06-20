@@ -23,3 +23,10 @@ Status values: `READY`, `IN_PROGRESS`, `BLOCKED`, `NOT_STARTED`
 | Blocking conditions | OPEN | Symlink/path escape protection, kill switch enforcement, approval replay prevention, rollback integrity, and resource limits remain unresolved. |
 
 Portfolio OS V1.1 remains certified for governed dry-run operation.
+## Weekly Brief Foundation Update
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Weekly brief foundation | IMPLEMENTED_AWAITING_REVIEW | Governance definition, policy, schemas, template, and validator exist. |
+| Execution authorization | NOT_AUTHORIZED | Separate owner gate required. |
+| Live execution | NO-GO | No live execution enabled. |

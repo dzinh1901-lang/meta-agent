@@ -58,3 +58,8 @@
 | Unbounded local output | Open | Add output size, file count, and duration limits. |
 
 Execution authorization remains `NOT_AUTHORIZED`.
+## Weekly Brief Foundation Update
+
+The controlled weekly brief foundation addresses the readiness gaps at the design and local-validation layer, but execution remains unauthorized until owner approval and one-run authorization are completed in a separate gate.
+
+Execution authorization remains `NOT_AUTHORIZED`.

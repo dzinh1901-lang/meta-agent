@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meta-agent.local/contracts/controlled-execution-weekly-brief-request.schema.json",
+  "title": "Controlled Execution Weekly Brief Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pilot_id", "workflow_id", "task_id", "repository", "branch", "baseline_commit", "input_snapshot_path", "output_directory", "execution_authorization"],
+  "properties": {
+    "pilot_id": { "const": "chief-of-staff-weekly-executive-brief" },
+    "workflow_id": { "const": "controlled-weekly-brief" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "repository": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "baseline_commit": { "type": "string", "minLength": 7 },
+    "input_snapshot_path": { "type": "string", "minLength": 1 },
+    "output_directory": { "type": "string", "minLength": 1 },
+    "execution_authorization": { "const": "NOT_AUTHORIZED" }
+  }
+}
