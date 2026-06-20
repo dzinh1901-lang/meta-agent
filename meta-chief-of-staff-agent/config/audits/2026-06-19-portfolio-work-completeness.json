@@ -32,6 +32,49 @@
       "unrelated_files_preserved": ["scripts/hosted-smoke-test.js in a separate local worktree"]
     }
   ],
+  "downloads_folder_scan": [
+    {
+      "local_path": "C:/Users/dzinh/Downloads/vds",
+      "repository": "microsoft-lang1901/vds-designos",
+      "status": "DIRTY_UNRELATED_PRESERVED"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/vds-material-spec-pr",
+      "repository": "microsoft-lang1901/vds-designos",
+      "status": "DIRTY_UNRELATED_PRESERVED"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/vds-supabase-blocker-pr",
+      "repository": "microsoft-lang1901/vds-designos",
+      "status": "DIRTY_UNRELATED_PRESERVED"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/vds-supabase-replacement-pr",
+      "repository": "microsoft-lang1901/vds-designos",
+      "status": "DIRTY_UNRELATED_PRESERVED"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/aurelean/Aurelean-App",
+      "repository": "dzinh1901-lang/aurelean-app",
+      "status": "DIRTY_UNRELATED_PRESERVED",
+      "preserved_file": "scripts/hosted-smoke-test.js"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/agent-ops/agentops-runtime-cleanstart",
+      "repository": null,
+      "status": "NON_CANONICAL_NO_REMOTE"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/agent-ops/agentops-runtime-once-pass",
+      "repository": null,
+      "status": "NON_CANONICAL_NO_REMOTE"
+    },
+    {
+      "local_path": "C:/Users/dzinh/Downloads/designos-orchestrator-v2",
+      "repository": "dzinh1901-lang/designos-orchestrator-v2",
+      "status": "OUT_OF_SCOPE"
+    }
+  ],
   "milestones": [
     {
       "repository": "dzinh1901-lang/meta-agent",

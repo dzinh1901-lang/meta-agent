@@ -21,6 +21,23 @@ This audit covers branch, commit, PR, deliverable, validation, generated-artifac
 | microsoft-lang1901/vds-designos | `C:\Users\dzinh\Downloads\vds-main-validate` | Domain evidence | Read-only validation |
 | dzinh1901-lang/aurelean-app | `C:\Users\dzinh\Downloads\aurelean-main-validate` | Domain evidence | Read-only validation |
 
+## Downloads Folder Worktree Scan
+
+The audit was checked against Git repositories found under `C:\Users\dzinh\Downloads`, including nested folders. Canonical publication evidence used the clean worktrees listed above.
+
+Additional local worktrees were preserved without staging or modification:
+
+| Local Path | Repository | Status |
+| --- | --- | --- |
+| `C:\Users\dzinh\Downloads\vds` | `microsoft-lang1901/vds-designos` | Dirty, unrelated local changes preserved |
+| `C:\Users\dzinh\Downloads\vds-material-spec-pr` | `microsoft-lang1901/vds-designos` | Dirty, unrelated local report changes preserved |
+| `C:\Users\dzinh\Downloads\vds-supabase-blocker-pr` | `microsoft-lang1901/vds-designos` | Dirty, unrelated local report changes preserved |
+| `C:\Users\dzinh\Downloads\vds-supabase-replacement-pr` | `microsoft-lang1901/vds-designos` | Dirty, unrelated local report changes preserved |
+| `C:\Users\dzinh\Downloads\aurelean\Aurelean-App` | `dzinh1901-lang/aurelean-app` | Dirty `scripts/hosted-smoke-test.js` preserved |
+| `C:\Users\dzinh\Downloads\agent-ops\agentops-runtime-cleanstart` | no origin remote | Non-canonical local experiment, not used for publication |
+| `C:\Users\dzinh\Downloads\agent-ops\agentops-runtime-once-pass` | no origin remote | Non-canonical local experiment, not used for publication |
+| `C:\Users\dzinh\Downloads\designos-orchestrator-v2` | `dzinh1901-lang/designos-orchestrator-v2` | Out of scope for this four-repo audit |
+
 ## Milestones Reviewed
 
 1. VDS Runtime Pilot
