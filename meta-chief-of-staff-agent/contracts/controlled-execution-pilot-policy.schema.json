@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Controlled Execution Pilot Policy",
+  "type": "object",
+  "required": ["identity", "scope", "allowedCapabilities", "deniedCapabilities", "resourceLimits", "safetyDefaults"],
+  "properties": {
+    "identity": { "type": "object", "required": ["policyVersion", "pilotId", "workflowId", "ownerRole", "effectiveDate", "expirationDate"] },
+    "scope": { "type": "object", "required": ["approvedRepository", "approvedBranch", "approvedBaselineCommit", "approvedInputPaths", "approvedOutputDirectory", "approvedWorkflow", "approvedActionAllowlist"] },
+    "allowedCapabilities": { "type": "array", "items": { "type": "string" } },
+    "deniedCapabilities": { "type": "array", "items": { "type": "string" } },
+    "resourceLimits": { "type": "object", "required": ["maximumInputFiles", "maximumInputBytes", "maximumOutputFiles", "maximumOutputBytes", "maximumExecutionDurationSeconds", "maximumRetryCount", "oneExecutionPerApproval"] },
+    "safetyDefaults": { "type": "object", "required": ["failClosed", "denyByDefault", "killSwitchEngagedByDefault", "executionDisabledByDefault", "approvalRequired", "immutableTaskDigestRequired", "policyDigestRequired", "baselineCommitMatchRequired"] }
+  },
+  "additionalProperties": false
+}
+

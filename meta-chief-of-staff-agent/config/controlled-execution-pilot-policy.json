@@ -1,0 +1,83 @@
+{
+  "identity": {
+    "policyVersion": "controlled-execution-pilot-policy.v1",
+    "pilotId": "chief-of-staff-weekly-brief-local-artifact",
+    "workflowId": "chief_of_staff_weekly_executive_brief",
+    "ownerRole": "portfolio_owner",
+    "effectiveDate": "2026-06-20T00:00:00.000Z",
+    "expirationDate": "2026-07-20T00:00:00.000Z"
+  },
+  "scope": {
+    "approvedRepository": "dzinh1901-lang/meta-agent",
+    "approvedBranch": "codex/controlled-execution-pilot-readiness",
+    "approvedBaselineCommit": "e53f91f",
+    "approvedInputPaths": [
+      "meta-chief-of-staff-agent/docs/PORTFOLIO-OS-V1-1-FINAL-REPORT.md",
+      "meta-chief-of-staff-agent/config/portfolio.registry.json"
+    ],
+    "approvedOutputDirectory": ".controlled-execution-pilot/output/",
+    "approvedWorkflow": "Chief of Staff Weekly Executive Brief",
+    "approvedActionAllowlist": [
+      "read_allowlisted_files",
+      "parse_json_markdown",
+      "generate_deterministic_markdown_json",
+      "write_isolated_output",
+      "validate_generated_output",
+      "produce_audit_evidence",
+      "rollback_pilot_generated_artifacts"
+    ]
+  },
+  "allowedCapabilities": [
+    "read explicitly allowlisted non-secret files",
+    "parse approved JSON and Markdown inputs",
+    "generate deterministic Markdown/JSON output",
+    "write only to the isolated pilot output directory",
+    "validate generated output",
+    "produce audit evidence",
+    "delete pilot-generated artifacts during rollback"
+  ],
+  "deniedCapabilities": [
+    "network",
+    "external APIs",
+    "shell",
+    "subprocesses",
+    "package installation",
+    "Git add",
+    "Git commit",
+    "Git push",
+    "branch modification",
+    "source-file modification",
+    "hidden-file modification",
+    "symbolic-link traversal",
+    "secret reads",
+    "environment credential reads",
+    "database access",
+    "migrations",
+    "billing",
+    "deployments",
+    "external communications",
+    "production writes",
+    "delegated execution",
+    "self-approval"
+  ],
+  "resourceLimits": {
+    "maximumInputFiles": 8,
+    "maximumInputBytes": 200000,
+    "maximumOutputFiles": 2,
+    "maximumOutputBytes": 100000,
+    "maximumExecutionDurationSeconds": 60,
+    "maximumRetryCount": 0,
+    "oneExecutionPerApproval": true
+  },
+  "safetyDefaults": {
+    "failClosed": true,
+    "denyByDefault": true,
+    "killSwitchEngagedByDefault": true,
+    "executionDisabledByDefault": true,
+    "approvalRequired": true,
+    "immutableTaskDigestRequired": true,
+    "policyDigestRequired": true,
+    "baselineCommitMatchRequired": true
+  }
+}
+

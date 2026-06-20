@@ -1,0 +1,45 @@
+{
+  "routingId": "portfolio-os-v1-1-aurelean-rfq-pilot",
+  "version": "1.0.0",
+  "workflow": "RFQ Review Request",
+  "portfolioRoutingKey": "aurelean.rfq_review",
+  "runtimeAgentId": "aurelean-rfq",
+  "dryRunOnly": true,
+  "liveExecutionEnabled": false,
+  "route": [
+    "RFQ Review Request",
+    "Meta-Agent",
+    "AgentOps Runtime",
+    "Aurelean RFQ Agent (aurelean-rfq)",
+    "Dry-Run Planner",
+    "Sandbox Boundary",
+    "Readiness Validator",
+    "Audit Package",
+    "Portfolio Dashboard"
+  ],
+  "blockedCapabilities": [
+    "live_execution",
+    "deployments",
+    "secrets",
+    "billing",
+    "database_writes",
+    "external_communications",
+    "production_modifications",
+    "supplier_outreach",
+    "vendor_award",
+    "spend_commitment",
+    "autonomous_execution"
+  ],
+  "requiredEvidence": [
+    "routing",
+    "agent selection",
+    "skill selection",
+    "approval checks",
+    "dry-run planner",
+    "sandbox boundary",
+    "readiness validator",
+    "audit package",
+    "portfolio reporting"
+  ]
+}
+

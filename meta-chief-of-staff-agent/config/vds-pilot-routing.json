@@ -1,0 +1,35 @@
+{
+  "routingId": "portfolio-os-v1-vds-project-review-pilot",
+  "version": "1.0.0",
+  "workflow": "Project Review Request",
+  "portfolioRoutingKey": "vds.project_review",
+  "runtimeAgentId": "vds-project-review",
+  "dryRunOnly": true,
+  "liveExecutionEnabled": false,
+  "route": [
+    "Project Review Request",
+    "Meta-Agent",
+    "AgentOps Runtime",
+    "VDS Project Review Agent (vds-project-review)",
+    "Dry-Run Plan",
+    "Audit Package",
+    "Portfolio Dashboard"
+  ],
+  "blockedCapabilities": [
+    "live_execution",
+    "deployments",
+    "secrets",
+    "billing",
+    "database_writes",
+    "external_communications",
+    "production_modifications"
+  ],
+  "requiredEvidence": [
+    "runtime intake",
+    "routing",
+    "skill selection",
+    "approval checks",
+    "audit package",
+    "portfolio reporting"
+  ]
+}

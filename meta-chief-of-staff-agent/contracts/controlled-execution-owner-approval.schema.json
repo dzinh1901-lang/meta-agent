@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Controlled Execution Owner Approval",
+  "type": "object",
+  "required": ["approvalId", "ownerRole", "pilotId", "workflowId", "taskId", "taskPayloadDigest", "policyVersion", "policyDigest", "repository", "branch", "baselineCommitSha", "inputAllowlist", "outputDirectory", "actionAllowlist", "prohibitedActionAcknowledgement", "maximumResourceLimits", "approvalIssueTime", "approvalExpiryTime", "singleUseNonce", "approvalStatus", "revocationStatus", "ownerSignatureReference"],
+  "properties": {
+    "approvalId": { "type": "string" },
+    "ownerRole": { "type": "string" },
+    "pilotId": { "type": "string" },
+    "workflowId": { "type": "string" },
+    "taskId": { "type": "string" },
+    "taskPayloadDigest": { "type": "string" },
+    "policyVersion": { "type": "string" },
+    "policyDigest": { "type": "string" },
+    "repository": { "type": "string" },
+    "branch": { "type": "string" },
+    "baselineCommitSha": { "type": "string" },
+    "inputAllowlist": { "type": "array", "items": { "type": "string" } },
+    "outputDirectory": { "type": "string" },
+    "actionAllowlist": { "type": "array", "items": { "type": "string" } },
+    "prohibitedActionAcknowledgement": { "const": true },
+    "maximumResourceLimits": { "type": "object" },
+    "approvalIssueTime": { "type": "string" },
+    "approvalExpiryTime": { "type": "string" },
+    "singleUseNonce": { "type": "string" },
+    "approvalStatus": { "enum": ["approved", "rejected", "pending"] },
+    "revocationStatus": { "enum": ["not_revoked", "revoked"] },
+    "ownerSignatureReference": { "type": "string" }
+  },
+  "additionalProperties": false
+}
+
