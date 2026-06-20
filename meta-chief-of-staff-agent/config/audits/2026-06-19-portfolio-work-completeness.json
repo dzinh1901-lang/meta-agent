@@ -7,14 +7,14 @@
       "name": "dzinh1901-lang/meta-agent",
       "local_path": "C:/Users/dzinh/Downloads/meta-agent",
       "default_branch": "main",
-      "audit_branch": "codex/2026-06-19-work-completeness-audit",
+      "audit_branch": "codex/2026-06-19-publication-closeout",
       "unrelated_files_preserved": []
     },
     {
       "name": "dzinh1901-lang/agentops-runtime",
       "local_path": "C:/Users/dzinh/Downloads/agent-ops/agentops-runtime",
       "default_branch": "main",
-      "audit_branch": "codex/2026-06-19-work-completeness-audit",
+      "audit_branch": "codex/2026-06-19-publication-closeout",
       "unrelated_files_preserved": []
     },
     {
@@ -84,7 +84,7 @@
       "remote_branch": "origin/codex/vds-runtime-pilot",
       "pr": null,
       "work_product_completeness": "COMPLETE",
-      "publication_completeness": "PUBLISHED_AWAITING_REVIEW",
+      "publication_completeness": "MERGED_TO_MAIN",
       "validation_status": "PASSED",
       "documentation_status": "ACCURATE",
       "safety_status": "PASS",
@@ -148,18 +148,19 @@
       "repository": "dzinh1901-lang/meta-agent",
       "milestone": "Controlled Execution Readiness",
       "branch": "codex/controlled-execution-pilot-readiness",
-      "commit": "6f1db747a7db32d91f67e9f21e44ae8f54e385b4",
+      "commit": "af190e51c380711ab0e5f6174f777e06bd9e3c41",
       "remote_branch": "origin/codex/controlled-execution-pilot-readiness",
       "pr": 10,
       "work_product_completeness": "COMPLETE",
-      "publication_completeness": "PUBLISHED_AWAITING_REVIEW",
+      "publication_completeness": "MERGED_TO_MAIN",
       "validation_status": "PASSED",
       "documentation_status": "ACCURATE",
       "safety_status": "PASS",
       "generated_artifact_status": "IGNORED",
-      "open_blocker": "Draft PR awaiting review",
-      "owner_action": "Review PR #10",
-      "next_step": "Merge before weekly brief implementation PR"
+      "merge_commit": "b6a09ba3c8cb9aa93a1bd6bc43680fbd8559e88a",
+      "open_blocker": null,
+      "owner_action": "Review publication closeout",
+      "next_step": "Keep authorization gate separate"
     },
     {
       "repository": "dzinh1901-lang/meta-agent",
@@ -169,14 +170,15 @@
       "remote_branch": "origin/codex/controlled-execution-weekly-brief-pilot-implementation",
       "pr": 9,
       "work_product_completeness": "COMPLETE_WITH_DOCUMENTED_GAPS",
-      "publication_completeness": "PUBLISHED_AWAITING_REVIEW",
+      "publication_completeness": "MERGED_TO_MAIN",
       "validation_status": "PASSED",
       "documentation_status": "ACCURATE",
       "safety_status": "PASS",
       "generated_artifact_status": "NOT_GENERATED",
+      "merge_commit": "ac55c83e9aeeb820451b11926d10fe84b2078d7a",
       "open_blocker": "Owner authorization gate not run",
-      "owner_action": "Review PR #9",
-      "next_step": "Separate authorization gate only after review"
+      "owner_action": "Review publication closeout",
+      "next_step": "Separate authorization gate only after explicit owner instruction"
     }
   ],
   "commits": [
@@ -200,42 +202,46 @@
     {
       "repository": "dzinh1901-lang/meta-agent",
       "number": 10,
-      "state": "open",
-      "draft": true,
+      "state": "merged",
+      "draft": false,
       "base": "main",
       "head": "codex/controlled-execution-pilot-readiness",
-      "head_sha": "6f1db747a7db32d91f67e9f21e44ae8f54e385b4",
-      "mergeable": true
+      "head_sha": "af190e51c380711ab0e5f6174f777e06bd9e3c41",
+      "merge_commit": "b6a09ba3c8cb9aa93a1bd6bc43680fbd8559e88a",
+      "mergeable": null
     },
     {
       "repository": "dzinh1901-lang/meta-agent",
       "number": 9,
-      "state": "open",
-      "draft": true,
-      "base": "codex/controlled-execution-pilot-readiness",
+      "state": "merged",
+      "draft": false,
+      "base": "main",
       "head": "codex/controlled-execution-weekly-brief-pilot-implementation",
       "head_sha": "86c8f3271e990b46754884b0cc23916122312922",
-      "mergeable": true
+      "merge_commit": "ac55c83e9aeeb820451b11926d10fe84b2078d7a",
+      "mergeable": null
     },
     {
       "repository": "dzinh1901-lang/agentops-runtime",
       "number": 42,
-      "state": "open",
-      "draft": true,
+      "state": "merged",
+      "draft": false,
       "base": "main",
       "head": "codex/controlled-execution-pilot-readiness",
-      "head_sha": "cf1a262714b4791f6e6cc5e622fc876ceb6f6366",
-      "mergeable": true
+      "head_sha": "579fd41ce3ab6bfc1f23c4eecf43a4943aae240f",
+      "merge_commit": "e124692f0c680ac896220227ff3a63bc6999a6af",
+      "mergeable": null
     },
     {
       "repository": "dzinh1901-lang/agentops-runtime",
       "number": 41,
-      "state": "open",
-      "draft": true,
-      "base": "codex/controlled-execution-pilot-readiness",
+      "state": "merged",
+      "draft": false,
+      "base": "main",
       "head": "codex/controlled-execution-weekly-brief-pilot-implementation",
       "head_sha": "6e0b84de791167dd748d54bd452a58da19101f5b",
-      "mergeable": true
+      "merge_commit": "31a9c4b00f14b496af03ffa48440a7f377227dca",
+      "mergeable": null
     }
   ],
   "validations": [
@@ -243,16 +249,16 @@
     { "repository": "meta-agent", "command": "npm run policy:check", "result": "PASSED" },
     { "repository": "meta-agent", "command": "npm run protocol:github", "result": "PASSED" },
     { "repository": "meta-agent", "command": "node scripts/validate-doc-links.js", "result": "PASSED" },
-    { "repository": "meta-agent", "command": "node scripts/validate-portfolio-certification.js", "result": "NOT_PRESENT_ON_MAIN", "evidence_scope": "previously reproduced on stacked milestone branch" },
-    { "repository": "meta-agent", "command": "node scripts/validate-controlled-execution-readiness.js", "result": "NOT_PRESENT_ON_MAIN", "evidence_scope": "previously reproduced on stacked milestone branch" },
-    { "repository": "meta-agent", "command": "node scripts/validate-controlled-execution-weekly-brief.js", "result": "NOT_PRESENT_ON_MAIN", "evidence_scope": "previously reproduced on stacked implementation branch" },
+    { "repository": "meta-agent", "command": "node scripts/validate-portfolio-certification.js", "result": "PASSED", "evidence_scope": "main" },
+    { "repository": "meta-agent", "command": "node scripts/validate-controlled-execution-readiness.js", "result": "PASSED", "evidence_scope": "main" },
+    { "repository": "meta-agent", "command": "node scripts/validate-controlled-execution-weekly-brief.js", "result": "PASSED", "evidence_scope": "main" },
     { "repository": "meta-agent", "command": "node scripts/validate-2026-06-19-work-completeness.js", "result": "PASSED", "evidence_scope": "main" },
     { "repository": "agentops-runtime", "command": "npm run check", "result": "PASSED" },
-    { "repository": "agentops-runtime", "command": "npm test", "result": "PASSED", "test_count": 94, "evidence_scope": "main" },
+    { "repository": "agentops-runtime", "command": "npm test", "result": "PASSED", "test_count": 104, "test_files": 9, "evidence_scope": "main" },
     { "repository": "agentops-runtime", "command": "npm run validate:skills", "result": "PASSED" },
     { "repository": "agentops-runtime", "command": "npm run validate:github-protocol", "result": "PASSED" },
     { "repository": "agentops-runtime", "command": "node tests/contracts/meta-agent-contracts.test.mjs", "result": "PASSED" },
-    { "repository": "agentops-runtime", "command": "node scripts/validate-controlled-execution-readiness-evidence.mjs", "result": "NOT_PRESENT_ON_MAIN", "evidence_scope": "previously reproduced on stacked readiness branch" },
+    { "repository": "agentops-runtime", "command": "node scripts/validate-controlled-execution-readiness-evidence.mjs", "result": "PASSED", "evidence_scope": "main" },
     { "repository": "agentops-runtime", "command": "npm run runtime:intake", "result": "PASSED" },
     { "repository": "vds-designos", "command": "npm run validate:codex-agents", "result": "PASSED" },
     { "repository": "aurelean-app", "command": "npm run validate:codex-agents", "result": "PASSED" },
@@ -279,20 +285,19 @@
     { "path": ".controlled-execution-pilot/", "status": "NOT_GENERATED" }
   ],
   "gaps": [
-    "PR stack is published but not merged.",
+    "Owner authorization gate has not been run.",
     "Owner approval provider is not connected.",
     "Real kill-switch provider is not connected.",
     "Audit hash chain is tamper-evident but not identity-authenticated.",
     "Host-specific Windows reparse-point behavior needs review."
   ],
   "owner_actions": [
-    "Review readiness PRs before implementation PRs.",
-    "Decide whether to mark draft PRs ready.",
+    "Review publication closeout PRs.",
     "Review residual risks before any authorization gate."
   ],
   "final_verdict": {
     "work_product_completeness": "COMPLETE_WITH_DOCUMENTED_GAPS",
-    "publication_completeness": "PUBLISHED_AWAITING_REVIEW",
+    "publication_completeness": "MERGED_TO_MAIN",
     "execution_authorization": "NOT_AUTHORIZED",
     "live_execution": "NO-GO"
   }

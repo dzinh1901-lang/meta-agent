@@ -4,7 +4,7 @@
 
 Portfolio OS work completed for the 2026-06-19 audit day was reconciled across Meta-Agent, AgentOps Runtime, VDS DesignOS, and Aurelean using Asia/Ulaanbaatar as the reporting timezone.
 
-Work-product completeness is `COMPLETE_WITH_DOCUMENTED_GAPS` because the controlled weekly brief foundation is implemented and validated, while owner-provider review, signed audit identity, and one-run authorization remain intentionally outside this audit. Publication completeness is `PUBLISHED_AWAITING_REVIEW` because milestone branches and draft PRs are published, but not merged.
+Work-product completeness is `COMPLETE_WITH_DOCUMENTED_GAPS` because the controlled weekly brief foundation is implemented and validated, while owner-provider review, signed audit identity, and one-run authorization remain intentionally outside this audit. Publication completeness is `MERGED_TO_MAIN` because the readiness and implementation PR stack was reconciled, validated, retargeted where required, and merged.
 
 Execution authorization remains `NOT_AUTHORIZED`. Live execution remains `NO-GO`.
 
@@ -57,12 +57,12 @@ All known commits exist locally and on their expected remote milestone branches.
 
 | Repository | PR | Status | Base | Head | Finding |
 | --- | --- | --- | --- | --- | --- |
-| meta-agent | #10 | Open draft | `main` | `codex/controlled-execution-pilot-readiness` | Published awaiting review |
-| meta-agent | #9 | Open draft | `codex/controlled-execution-pilot-readiness` | `codex/controlled-execution-weekly-brief-pilot-implementation` | Correctly stacked |
-| agentops-runtime | #42 | Open draft | `main` | `codex/controlled-execution-pilot-readiness` | Published awaiting review |
-| agentops-runtime | #41 | Open draft | `codex/controlled-execution-pilot-readiness` | `codex/controlled-execution-weekly-brief-pilot-implementation` | Correctly stacked |
+| meta-agent | #10 | Merged | `main` | `codex/controlled-execution-pilot-readiness` | Merge `b6a09ba3c8cb9aa93a1bd6bc43680fbd8559e88a` |
+| meta-agent | #9 | Merged | `main` | `codex/controlled-execution-weekly-brief-pilot-implementation` | Retargeted after readiness; merge `ac55c83e9aeeb820451b11926d10fe84b2078d7a` |
+| agentops-runtime | #42 | Merged | `main` | `codex/controlled-execution-pilot-readiness` | Merge `e124692f0c680ac896220227ff3a63bc6999a6af` |
+| agentops-runtime | #41 | Merged | `main` | `codex/controlled-execution-weekly-brief-pilot-implementation` | Retargeted after readiness; merge `31a9c4b00f14b496af03ffa48440a7f377227dca` |
 
-No PR was merged or retargeted during this audit.
+Implementation PRs were retargeted to `main` only after the readiness PRs were merged and main validation passed.
 
 ## Deliverable Completeness
 
@@ -72,9 +72,9 @@ Expected governance, certification, readiness, weekly brief policy/schema/templa
 
 Validation was reproduced for Meta-Agent, AgentOps Runtime, VDS, and Aurelean from the local Downloads folder.
 
-Meta-Agent `main` passed the validators present on `main`, including the new audit validator. Later milestone-specific validators for portfolio certification, controlled-execution readiness, and weekly brief governance are not present on `main` yet; those were previously reproduced on their stacked milestone branches and are recorded as publication-stack evidence, not as main-branch commands.
+Meta-Agent `main` passed the full validator set after publication, including portfolio certification, controlled-execution readiness, controlled weekly brief governance, document links across 93 markdown files, and the June 19 completeness validator.
 
-AgentOps Runtime `main` reported `94 passed` tests. The `104 passed` test count belongs to the stacked controlled weekly brief implementation branch. VDS and Aurelean project-safe agent validators passed.
+AgentOps Runtime `main` reported `104 passed` tests after publication. VDS and Aurelean remained reference-only and were not modified.
 
 ## Safety and Governance Results
 
@@ -99,26 +99,22 @@ Generated/runtime-local paths remain ignored or untracked as local-only evidence
 | Real kill-switch provider not connected | AgentOps Runtime | High | Review in authorization gate |
 | Audit hash chain is not identity-authenticated | AgentOps Runtime | Medium | Decide whether signed packages are required |
 | Host-specific Windows reparse-point behavior needs review | AgentOps Runtime | Medium | Platform hardening review |
-| PR stack not merged | All | Medium | Owner review and merge in dependency order |
+| Owner authorization gate not run | All | High | Open only after explicit owner instruction |
 
 ## Owner Actions
 
-- Review draft PRs #9, #10, #41, and #42.
-- Decide whether to mark PRs ready for review.
-- Merge prerequisite readiness PRs before implementation PRs.
-- Only after review, consider the separate one-run authorization gate.
+- Review this publication closeout record.
+- Only after explicit owner instruction, consider the separate one-run authorization gate.
 
 ## Next Actions
 
-1. Review and merge Portfolio OS milestone PR stack in dependency order.
-2. Rebase or retarget implementation PRs after readiness PRs merge.
-3. Run final validation on merged main.
-4. Open `codex/controlled-execution-weekly-brief-pilot-authorization` only as a separate owner-approval gate.
+1. Merge the publication closeout PRs after audit-only review.
+2. Keep `codex/controlled-execution-weekly-brief-pilot-authorization` separate and unopened unless explicitly instructed.
 
 ## Final Verdict
 
 - Work-product completeness: `COMPLETE_WITH_DOCUMENTED_GAPS`
-- Publication completeness: `PUBLISHED_AWAITING_REVIEW`
+- Publication completeness: `MERGED_TO_MAIN`
 - Execution authorization: `NOT_AUTHORIZED`
 - Live execution: `NO-GO`
 
