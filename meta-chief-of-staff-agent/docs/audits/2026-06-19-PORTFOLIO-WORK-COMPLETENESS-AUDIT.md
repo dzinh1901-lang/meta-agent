@@ -70,7 +70,11 @@ Expected governance, certification, readiness, weekly brief policy/schema/templa
 
 ## Validation Results
 
-Validation was reproduced for Meta-Agent, AgentOps Runtime, VDS, and Aurelean. AgentOps Runtime reported `104 passed` tests. VDS and Aurelean project-safe agent validators passed.
+Validation was reproduced for Meta-Agent, AgentOps Runtime, VDS, and Aurelean from the local Downloads folder.
+
+Meta-Agent `main` passed the validators present on `main`, including the new audit validator. Later milestone-specific validators for portfolio certification, controlled-execution readiness, and weekly brief governance are not present on `main` yet; those were previously reproduced on their stacked milestone branches and are recorded as publication-stack evidence, not as main-branch commands.
+
+AgentOps Runtime `main` reported `94 passed` tests. The `104 passed` test count belongs to the stacked controlled weekly brief implementation branch. VDS and Aurelean project-safe agent validators passed.
 
 ## Safety and Governance Results
 
