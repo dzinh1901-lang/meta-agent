@@ -1,17 +1,15 @@
 # 2026-06-19 Next Actions
 
-## Owner Review
+## Closeout Review
 
-1. Review Meta-Agent readiness PR #10.
-2. Review AgentOps Runtime readiness PR #42.
-3. Review Meta-Agent weekly brief implementation PR #9 after readiness review.
-4. Review AgentOps Runtime weekly brief implementation PR #41 after readiness review.
+1. Review and merge the publication closeout PRs.
+2. Confirm final main branch audit records remain `NOT_AUTHORIZED` and `NO-GO`.
 
-## Merge Order
+## Completed Merge Order
 
-1. Portfolio OS V1.1 certification stack, if still pending.
-2. Controlled execution readiness PRs.
-3. Controlled weekly brief implementation PRs.
+1. Controlled execution readiness PRs.
+2. Controlled weekly brief implementation PRs.
+3. Publication closeout PRs.
 
 ## Future Gate
 
