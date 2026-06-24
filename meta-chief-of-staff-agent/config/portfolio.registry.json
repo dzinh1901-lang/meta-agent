@@ -1,22 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "generatedBy": "Portfolio Control Plane",
-  "statusDate": "2026-06-20",
-  "operatingRule": "Do not make production-risk changes without explicit owner approval.",
+  "statusDate": "2026-06-24",
+  "operatingRule": "Do not make production-risk changes without explicit owner approval, and do not infer current state for inaccessible repositories.",
   "projects": [
     {
       "id": "agentops-runtime",
       "name": "AgentOps Runtime",
       "repository": "dzinh1901-lang/agentops-runtime",
       "localPath": "C:/Users/dzinh/Downloads/agent-ops/agentops-runtime",
-      "role": "Execution infrastructure for governed agents, skills, approval gates, traces, and evidence return.",
+      "role": "Execution infrastructure for governed agents, skills, approval gates, traces, evaluation, and evidence return.",
       "status": "active",
-      "currentMilestone": "Runtime RC stack merged to main; dry-run/no-op runtime supports intake, routing, approvals, traces, sandbox, readiness validation, audit packages, and RC review.",
+      "currentMilestone": "NemoClaw local/staging integration is on main; the GTC review branch adds normalized sandbox, network, credential-reference, resource-budget, policy-version, and task-digest controls.",
       "owner": "Portfolio Owner",
-      "riskLevel": "medium",
-      "productionReadiness": "dry-run-runtime-rc-main",
+      "riskLevel": "high",
+      "productionReadiness": "local-staging-runtime-controls-in-review",
       "dependencies": ["meta-agent"],
-      "blockers": ["Live execution remains disabled; owner-approved controlled execution implementation is required before any real skill or tool execution."]
+      "blockers": [
+        "Production identity and authorization, hardened execution adapters, durable datastore and audit, immutable approval binding, staging enforcement evidence, live credentials, and paid execution remain blocked."
+      ]
     },
     {
       "id": "meta-agent",
@@ -25,68 +27,78 @@
       "localPath": "C:/Users/dzinh/Downloads/meta-agent/meta-chief-of-staff-agent",
       "role": "Portfolio intelligence, Chief of Staff planning, routing, approvals, registry, and weekly reporting.",
       "status": "active",
-      "currentMilestone": "Portfolio runtime integration status tracks AgentOps Runtime RC main and downstream VDS/Aurelean readiness gates.",
+      "currentMilestone": "The GTC portfolio review refreshes the connected repository matrix and defines a provider-neutral secure-runtime adoption order.",
       "owner": "Portfolio Owner",
       "riskLevel": "medium",
-      "productionReadiness": "documentation-control-plane",
+      "productionReadiness": "documentation-and-deterministic-control-plane",
       "dependencies": ["agentops-runtime"],
-      "blockers": ["Keep runtime integration evidence current as AgentOps Runtime PRs land."]
+      "blockers": [
+        "Current read-only GitHub discovery and automatic evidence freshness are not yet implemented; production side effects remain prohibited."
+      ]
     },
     {
       "id": "vds-designos",
       "name": "VDS DesignOS",
       "repository": "microsoft-lang1901/vds-designos",
       "localPath": "C:/Users/dzinh/Downloads/vds",
-      "role": "First production candidate and architecture studio operating system.",
-      "status": "active",
-      "currentMilestone": "Production readiness remains routed through AgentOps dry-run runtime evidence and owner approval gates.",
+      "role": "Historical registry entry for an architecture studio operating system.",
+      "status": "unverified-in-current-connection",
+      "currentMilestone": "No current milestone may be asserted until direct repository evidence is available.",
       "owner": "Portfolio Owner",
-      "riskLevel": "high",
-      "productionReadiness": "candidate-review-required",
+      "riskLevel": "unknown",
+      "productionReadiness": "unverified",
       "dependencies": ["agentops-runtime", "meta-agent"],
-      "blockers": ["Supabase, Stripe, Vercel, OpenAI live-mode, rollback, and monitoring evidence require owner confirmation; live runtime execution is not enabled."]
+      "blockers": [
+        "Repository is not available through the current GitHub connection; issue, pull-request, deployment, credential, billing, and production state are unverified."
+      ]
     },
     {
       "id": "aurelean-platform",
-      "name": "Aurelean Platform",
+      "name": "AURELEAN",
       "repository": "dzinh1901-lang/aurelean-app",
       "localPath": "C:/Users/dzinh/Downloads/aurelean/Aurelean-App",
-      "role": "Launch-closer ready textile sourcing and RFQ platform.",
+      "role": "Textile intelligence, sourcing, RFQ, swatch, quote, and procurement MVP/prototype.",
       "status": "active",
-      "currentMilestone": "Launch closer checklist remains governed by AgentOps dry-run runtime evidence and owner approval gates.",
+      "currentMilestone": "Complete hosted deployment evidence, production identity and RBAC, target database validation and cutover, tenant ownership, and observability while keeping AI integrations provider-neutral and disabled by default.",
       "owner": "Portfolio Owner",
       "riskLevel": "high",
-      "productionReadiness": "launch-closer-review",
+      "productionReadiness": "controlled-demo-and-pre-market-intake",
       "dependencies": ["agentops-runtime"],
-      "blockers": ["Admin token, session secret, demo-mode, and Render production environment must be owner-provided; live runtime execution is not enabled."]
+      "blockers": [
+        "Hosted environment configuration, deployment and browser QA, durable database activation, confidential production controls, supplier awards, external messages, and live AI/provider activation require evidence and owner authorization."
+      ]
     },
     {
       "id": "meridian-yacht-atelier",
       "name": "Meridian Yacht Atelier",
       "repository": "dzinh1901-lang/meridian-yacht-atelier",
       "localPath": "C:/Users/dzinh/Downloads/meridian-yacht-atelier",
-      "role": "Yacht procurement, client portal, vendor management, and atelier operations platform.",
-      "status": "active",
-      "currentMilestone": "Client portal/backend PRD and procurement workflow scope.",
+      "role": "Client portal, design collaboration, publication controls, and cinematic connector platform.",
+      "status": "active-with-open-issue",
+      "currentMilestone": "Complete open Issue #5: pure cinematic domain core, provider-neutral ports, typed contracts, connector registry and routing policies, and deterministic fake agents and connectors.",
       "owner": "Portfolio Owner",
       "riskLevel": "medium",
-      "productionReadiness": "scope-definition",
+      "productionReadiness": "portal-and-cinematic-vertical-slice",
       "dependencies": ["agentops-runtime"],
-      "blockers": ["Future backend scope must be separated from current implementation."]
+      "blockers": [
+        "Live provider execution, paid generation, production credentials, and any RTX Spark or Cosmos dependency remain outside the current approved scope."
+      ]
     },
     {
       "id": "monsieur-app",
       "name": "Monsieur App / Aelier Groupe Commerce Layer",
       "repository": "dzinh1901-lang/monsieur-app",
       "localPath": "C:/Users/dzinh/Downloads/Monsieur App",
-      "role": "Luxury commerce, made-to-measure, fibre passport, private client, and Stripe checkout scope.",
-      "status": "local-folder-no-git",
-      "currentMilestone": "Scope PRD or blocked record depending on repository availability.",
+      "role": "Historical registry entry for luxury commerce, made-to-measure, fibre passport, and private-client scope.",
+      "status": "unverified-in-current-connection",
+      "currentMilestone": "Confirm the canonical repository and connect it before defining executable work.",
       "owner": "Portfolio Owner",
-      "riskLevel": "medium",
-      "productionReadiness": "blocked-until-repo-confirmed",
+      "riskLevel": "unknown",
+      "productionReadiness": "unverified",
       "dependencies": ["aurelean-platform"],
-      "blockers": ["Local folder exists but is not a Git checkout; remote repository availability is unconfirmed."]
+      "blockers": [
+        "Repository is not available through the current GitHub connection; implementation, Stripe, credential, commerce, and production state are unverified."
+      ]
     }
   ]
 }
