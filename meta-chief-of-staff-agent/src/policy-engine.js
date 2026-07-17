@@ -111,14 +111,47 @@ function classifyAction(actionType, context = {}) {
   };
 }
 
+function getApprovalActionDigest(approval) {
+  if (!approval || typeof approval !== 'object') return null;
+  if (typeof approval.action_digest === 'string' && approval.action_digest) return approval.action_digest;
+  if (approval.exact_action && typeof approval.exact_action.action_digest === 'string') {
+    return approval.exact_action.action_digest;
+  }
+  if (approval.constraints && typeof approval.constraints.action_digest === 'string') {
+    return approval.constraints.action_digest;
+  }
+  return null;
+}
+
+function getScopeActionDigest(scope) {
+  if (!scope || typeof scope !== 'object') return null;
+  if (typeof scope.action_digest === 'string' && scope.action_digest) return scope.action_digest;
+  if (typeof scope.actionDigest === 'string' && scope.actionDigest) return scope.actionDigest;
+  if (scope.exact_action && typeof scope.exact_action.action_digest === 'string') {
+    return scope.exact_action.action_digest;
+  }
+  return null;
+}
+
 function approvalCoversAction(decision, approval = null, scope = {}) {
   if (!approval || approval.status !== 'approved' || decision.blocked) return false;
   if (typeof approval.expires_at !== 'string') return false;
   const expiryMs = Date.parse(approval.expires_at);
   if (Number.isNaN(expiryMs) || expiryMs <= Date.now()) return false;
-  if (!Array.isArray(approval.approved_actions) || !approval.approved_actions.includes(decision.actionType)) return false;
+
+  const approvedActions = Array.isArray(approval.approved_actions)
+    ? approval.approved_actions
+    : typeof approval.action_type === 'string'
+      ? [approval.action_type]
+      : [];
+  if (!approvedActions.includes(decision.actionType)) return false;
+
   const required = decision.approvals || [];
-  const approvedRoles = approval.approver_roles || [];
+  const approvedRoles = Array.isArray(approval.approver_roles)
+    ? approval.approver_roles
+    : Array.isArray(approval.approved_roles)
+      ? approval.approved_roles
+      : [];
   if (!required.every((role) => approvedRoles.includes(role))) return false;
 
   const constraints = approval.constraints || {};
@@ -127,6 +160,12 @@ function approvalCoversAction(decision, approval = null, scope = {}) {
   if (scope.environment && constraints.target_environment && constraints.target_environment !== scope.environment) return false;
   const forbiddenActions = constraints.forbidden_actions || [];
   if (forbiddenActions.includes(decision.actionType)) return false;
+
+  const approvalDigest = getApprovalActionDigest(approval);
+  const scopeDigest = getScopeActionDigest(scope);
+  if (approvalDigest && !scopeDigest) return false;
+  if (approvalDigest && approvalDigest !== scopeDigest) return false;
+  if (constraints.action_digest && constraints.action_digest !== scopeDigest) return false;
   return true;
 }
 
@@ -153,8 +192,22 @@ function summarizePolicy() {
     action_count: Object.keys(ACTIONS).length,
     hard_blocks: Object.keys(HARD_BLOCKS),
     default_mode: 'read_only_until_authorized',
-    self_approval_allowed: false
+    self_approval_allowed: false,
+    exact_action_binding_supported: true,
+    exact_action_binding_version: '1.0'
   };
 }
 
-module.exports = { RISK_LEVELS, APPROVER_ROLES, ACTIONS, HARD_BLOCKS, classifyAction, approvalCoversAction, requireApprovalPacket, assertAllowed, summarizePolicy };
+module.exports = {
+  RISK_LEVELS,
+  APPROVER_ROLES,
+  ACTIONS,
+  HARD_BLOCKS,
+  classifyAction,
+  getApprovalActionDigest,
+  getScopeActionDigest,
+  approvalCoversAction,
+  requireApprovalPacket,
+  assertAllowed,
+  summarizePolicy
+};
