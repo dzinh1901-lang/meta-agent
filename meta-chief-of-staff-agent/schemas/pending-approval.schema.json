@@ -22,16 +22,22 @@
     "task_id": { "type": ["string", "null"] },
     "run_id": { "type": ["string", "null"] },
     "action_type": { "type": "string" },
+    "action_digest": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "exact_action": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
     "risk_level": { "enum": ["low", "medium", "high", "critical"] },
     "required_approver_roles": { "type": "array", "items": { "type": "string" } },
     "approved_roles": { "type": "array", "items": { "type": "string" } },
     "decision_ids": { "type": "array", "items": { "type": "string" } },
     "decisions": { "type": "array", "items": { "type": "object" } },
     "constraints": { "type": "object" },
-    "status": { "enum": ["pending", "approved", "rejected", "changes_requested", "expired"] },
+    "status": { "enum": ["pending", "approved", "rejected", "changes_requested", "expired", "consumed"] },
     "expires_at": { "type": "string", "format": "date-time" },
     "created_at": { "type": "string", "format": "date-time" },
-    "updated_at": { "type": "string", "format": "date-time" }
+    "updated_at": { "type": "string", "format": "date-time" },
+    "consumed_at": { "type": "string", "format": "date-time" }
   },
   "additionalProperties": false
 }
