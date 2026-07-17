@@ -34,6 +34,21 @@ actions:
   create_pull_request_draft:
     risk: high
     approvals_required: [engineering_approver]
+  schedule_repository_scan:
+    risk: low
+    approvals_required: []
+  run_scheduled_scan:
+    risk: low
+    approvals_required: [engineering_approver]
+  send_external_alert:
+    risk: high
+    approvals_required: [engineering_approver, principal_approver]
+  create_backup_snapshot:
+    risk: medium
+    approvals_required: [engineering_approver]
+  rollback_to_backup_snapshot:
+    risk: high
+    approvals_required: [engineering_approver, principal_approver]
   mutate_code:
     risk: high
     approvals_required: [engineering_approver]

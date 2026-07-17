@@ -6,7 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "validate": "node scripts/validate-project.js",
-    "dry-run": "node scripts/run-dry-run.js"
+    "dry-run": "node scripts/run-dry-run.js",
+    "agents-sdk:run": "cd agents-sdk && uv run python -m src.main",
+    "agents-sdk:run:mock": "cd agents-sdk && uv run python -m src.main \"Draft cross-repo task packets for read-only health reporting across AURELEAN and DesignOS.\""
   },
   "keywords": [
     "agents",
@@ -18,6 +20,9 @@
     "marketing",
     "github"
   ],
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
   "engines": {
     "node": ">=18"
   }
