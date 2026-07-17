@@ -1,27 +1,93 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AgentRun",
-  "type": "object",
-  "required": [
-    "run_id",
-    "agent",
-    "status",
-    "input_summary",
-    "outputs",
-    "approval_ids",
-    "audit_correlation_id",
-    "created_at"
+  "oneOf": [
+    { "$ref": "#/$defs/legacyRun" },
+    { "$ref": "#/$defs/sdkRun" }
   ],
-  "properties": {
-    "run_id": { "type": "string", "minLength": 1 },
-    "agent": { "type": "string", "minLength": 1 },
-    "status": { "enum": ["planned", "running", "paused_for_approval", "completed", "blocked", "failed"] },
-    "input_summary": { "type": "string", "minLength": 1 },
-    "outputs": { "type": "array" },
-    "approval_ids": { "type": "array", "items": { "type": "string" } },
-    "approval_decision_ids": { "type": "array", "items": { "type": "string" } },
-    "audit_correlation_id": { "type": "string", "minLength": 1 },
-    "created_at": { "type": "string", "format": "date-time" }
-  },
-  "additionalProperties": false
+  "$defs": {
+    "legacyRun": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "agent",
+        "status",
+        "input_summary",
+        "outputs",
+        "approval_ids",
+        "audit_correlation_id",
+        "created_at"
+      ],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "agent": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["planned", "running", "paused_for_approval", "completed", "blocked", "failed"] },
+        "input_summary": { "type": "string", "minLength": 1 },
+        "outputs": { "type": "array" },
+        "approval_ids": { "type": "array", "items": { "type": "string" } },
+        "approval_decision_ids": { "type": "array", "items": { "type": "string" } },
+        "audit_correlation_id": { "type": "string", "minLength": 1 },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "sdkRun": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "root_agent",
+        "runtime_version",
+        "status",
+        "input_summary",
+        "final_output",
+        "sdk_state",
+        "interruptions",
+        "created_at",
+        "updated_at",
+        "audit_correlation_id"
+      ],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "root_agent": { "type": "string", "minLength": 1 },
+        "runtime_version": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["running", "paused_for_approval", "completed", "blocked"] },
+        "input_summary": { "type": "string", "minLength": 1 },
+        "final_output": {},
+        "sdk_state": { "type": "string", "minLength": 1 },
+        "interruptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "approval_id",
+              "queue_id",
+              "action_digest",
+              "action_type",
+              "tool_name",
+              "agent_name",
+              "required_approver_roles",
+              "repository",
+              "environment"
+            ],
+            "properties": {
+              "approval_id": { "type": "string" },
+              "queue_id": { "type": "string" },
+              "action_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "action_type": { "type": "string" },
+              "tool_name": { "type": "string" },
+              "agent_name": { "type": "string" },
+              "required_approver_roles": { "type": "array", "items": { "type": "string" } },
+              "repository": { "type": ["string", "null"] },
+              "environment": { "type": ["string", "null"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "audit_correlation_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
 }
