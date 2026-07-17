@@ -11,10 +11,18 @@
     "checkJs": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmitOnError": true,
     "outDir": "dist",
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src/sdk/**/*.ts", "src/state/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.js",
+    "src/discovery/**/*.ts",
+    "src/sdk/**/*.ts",
+    "src/state/**/*.ts",
+    "tests/sdk/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist", "src/sdk/tools.ts"]
 }
