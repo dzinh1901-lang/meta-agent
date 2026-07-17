@@ -1,69 +1,62 @@
 # Meta Chief of Staff Agent
 
-This folder starts a dedicated project for a portfolio-level **Meta Agent / Chief of Staff Agent**. The system is designed to supervise all current project repositories, route work through each repository's own orchestrator, maintain human authorization gates, and coordinate portfolio functions such as procurement, marketing, launch readiness, security, billing, compliance, and evidence collection.
+**COSMOS** is a governed portfolio control plane for supervising repository-level orchestrators. It inventories project evidence, routes bounded work through local orchestrators, prepares decision packets, pauses risky SDK tool calls for human authorization, and produces structured executive synthesis.
 
-The design deliberately does **not** replace repository-level orchestrators. It introduces a controlled oversight layer that can inspect project state, request plans, route work packets, consolidate blockers, and prepare approval packets for humans.
+It does not replace repository orchestrators. It does not self-approve, access secrets, merge, deploy, spend, award vendors, publish externally, contact customers or suppliers, or mutate production.
 
-## Core Principle
+## Operating hierarchy
 
-```txt
-Portfolio Chief of Staff Agent
-  -> supervises repository-level orchestrators
-  -> orchestrators supervise project-level sub-agents
-  -> sub-agents execute bounded specialist workflows
-  -> high-risk actions pause for human authorization
+```text
+Human principal and approvers
+  -> COSMOS Meta Chief of Staff Agent
+  -> repository-level orchestrators
+  -> project specialist agents
+  -> validation and evidence
 ```
 
-Authority is supervisory and procedural. The Chief of Staff Agent can recommend, route, rank, hold, and escalate. It must not self-approve production, billing, procurement awards, public marketing, supplier/client communications, live credentials, or regulated/high-risk actions.
+The deterministic policy engine remains the authorization boundary. The OpenAI Agents SDK supplies manager/specialist orchestration, tool approval interruptions, tracing, and serializable run state.
 
-## Project Folder Map
+## Implemented runtime
 
-```txt
-meta-chief-of-staff-agent/
-├── README.md
-├── PRD.md
-├── ARCHITECTURE.md
-├── ROADMAP.md
-├── MILESTONES.md
-├── IMPLEMENTATION-PLAN.md
-├── AGENT-MODEL.md
-├── GOVERNANCE-AUTHORIZATIONS.md
-├── RISK-REGISTER.md
-├── agents/
-├── docs/
-│   ├── human-in-the-loop.md
-│   ├── integration-blueprint.md
-│   ├── operating-cadence.md
-│   ├── repository-inventory.md
-│   ├── PHASE-2-RISK-POLICY-ENFORCEMENT.md
-│   └── PHASE-3-TASK-APPROVAL-PACKETS.md
-├── policies/
-├── registries/
-├── schemas/
-├── examples/
-├── src/
-│   ├── approval-packet-builder.js
-│   ├── approval-policy.js
-│   ├── guardrails.js
-│   ├── meta-chief-agent.js
-│   ├── packet-utils.js
-│   ├── packet-workflow.js
-│   ├── policy-engine.js
-│   ├── repository-registry.js
-│   ├── run-state.js
-│   └── task-packet-builder.js
-├── scripts/
-│   ├── run-dry-run.js
-│   ├── run-phase3-demo.js
-│   ├── run-policy-check.js
-│   └── validate-project.js
-├── tests/
-│   ├── phase2-policy.test.js
-│   └── phase3-packets.test.js
-└── package.json
+- Root TypeScript manager agent with structured executive output.
+- Specialist agents exposed through the manager pattern.
+- Read-only, sanitized GitHub repository discovery.
+- Deterministic task, routing, procurement, policy, and evidence tools.
+- Durable in-memory, local JSON, and Postgres/Supabase-ready state adapters.
+- Human-in-the-loop pause/resume using serialized Agents SDK `RunState`.
+- Server-authorized approver role allowlists.
+- SHA-256 exact-action approval binding.
+- Multi-approver queues, expiry, constraint conflict detection, and single-use consumption.
+- Regression tests for legacy policy/packet workflows and the SDK runtime.
+- CI validation for deterministic and TypeScript layers.
+
+## Security invariants
+
+```text
+Unknown action -> hard block
+Unknown repository authority -> discovery required
+High or critical action -> approval interruption
+Changed tool arguments -> approval invalid
+Missing trusted approver role -> decision rejected
+Consumed approval -> replay rejected
+Repository content -> untrusted evidence
+Secrets in action arguments -> fail closed
 ```
 
-## Local Commands
+See [SDK Runtime](docs/SDK-RUNTIME.md) and [Threat Model](docs/THREAT-MODEL.md).
+
+## Install and validate
+
+Requirements: Node.js 20 or later.
+
+```bash
+npm install
+npm run check
+```
+
+`npm run check` validates the design package, policy and GitHub protocols, legacy phase tests, exact-action approval behavior, TypeScript compilation, local durable state, and read-only discovery.
+
+Useful deterministic commands:
 
 ```bash
 npm run validate
@@ -71,14 +64,84 @@ npm run dry-run
 npm run policy:check
 npm run packet:demo
 npm run monitor
-npm run monitor -- --postgres --schema public
-npm run test:phase2
-npm run test:phase3
-npm run phase2
-npm run phase3
+npm run test:legacy
+npm run test:exact-action
+npm run test:sdk
 ```
 
-## Portfolio Control Plane
+## Run the manager agent
+
+Provide credentials and identity claims through a trusted server environment. Do not put secrets in prompts or tool arguments.
+
+```bash
+OPENAI_API_KEY=... \
+COSMOS_OPERATOR_ID=principal-1 \
+COSMOS_APPROVER_ROLES=engineering_approver,principal_approver,security_approver \
+npm run agent:run -- \
+  --objective "Prepare launch-readiness reports for AURELEAN and DesignOS"
+```
+
+The default durable store is `.data/cosmos-state.json`. The CLI prints a redacted public snapshot and does not print serialized SDK state.
+
+Inspect status and approvals:
+
+```bash
+npm run agent:status -- --run-id sdk_run_...
+npm run agent:approvals
+```
+
+Record a decision for a pending exact action:
+
+```bash
+COSMOS_OPERATOR_ID=principal-1 \
+COSMOS_APPROVER_ROLES=engineering_approver \
+npm run agent:decide -- \
+  --run-id sdk_run_... \
+  --approval-id appr_... \
+  --decision approve_once \
+  --role engineering_approver \
+  --constraints '{"allowed_repository":"dzinh1901-lang/aurelean-app"}'
+```
+
+Production identity must come from authenticated middleware. The CLI role is accepted only when the trusted hosting environment already authorizes it through `COSMOS_APPROVER_ROLES`.
+
+## Read-only discovery
+
+The manager can inspect public GitHub repositories without a token, subject to API rate limits. Private repository discovery uses a server-side token:
+
+```bash
+GITHUB_READ_TOKEN=... npm run agent:run -- --objective "Refresh portfolio repository evidence"
+```
+
+Discovery uses GET requests only and returns artifact paths, source SHAs, sizes, package script names, structural metadata, evidence status, and confidence. It never returns raw repository text to the model.
+
+## Project map
+
+```text
+meta-chief-of-staff-agent/
+├── agents/                         Markdown agent contracts
+├── docs/                           Governance, runtime, operations and portfolio documents
+├── policies/                       Approval and risk matrices
+├── registries/                     Repository source of truth
+├── schemas/                        JSON schemas
+├── scripts/                        Deterministic validation and operating commands
+├── src/
+│   ├── discovery/                  GET-only GitHub reader and evidence normalization
+│   ├── sdk/                        Manager, specialists, governed tools, runtime and CLI
+│   ├── state/                      In-memory, JSON file and Postgres state adapters
+│   ├── approval-packet-builder.js  Approval packet construction
+│   ├── policy-engine.js            Deterministic risk and authorization policy
+│   ├── run-state.js                Approval queue and deterministic run state
+│   └── ...                         Existing task, routing, procurement and evidence modules
+├── tests/
+│   ├── sdk/                        TypeScript runtime tests
+│   └── phase*.test.js              Deterministic regression tests
+├── .env.example
+├── package.json
+└── tsconfig.json
+```
+
+## Portfolio documentation
 
 - [Portfolio registry](docs/PORTFOLIO-REGISTRY.md)
 - [Project status matrix](docs/PROJECT-STATUS-MATRIX.md)
@@ -92,36 +155,6 @@ npm run phase3
 - [Governance validation](docs/GOVERNANCE-VALIDATION.md)
 - [Weekly portfolio report template](templates/WEEKLY-PORTFOLIO-REPORT.md)
 
-### Monitoring Dashboard (`npm run monitor`)
+## External side effects
 
-Use `npm run monitor` to render a local oversight view from state records:
-
-- repository health cards (from `projectHealth`/`projectHealthSnapshots`)
-- approval queue status and pending/approved backlog
-- blockers from blocked tasks, rejected queues, and blocked audit events
-- risk summaries from tasks and approvals
-- procurement queue from procurement workflows
-- marketing queue from action intent/metadata heuristics
-- audit log tail
-
-By default, the dashboard uses in-memory seed mode (empty unless `--source` is used). For persisted records, use Postgres/Supabase:
-
-```bash
-DATABASE_URL=... npm run monitor -- --postgres
-```
-
-The included JavaScript is deterministic and dependency-free. It validates the design package, loads the repository registry, classifies actions by risk, enforces guardrails, validates scoped approvals, produces task packets, produces approval packets, creates pending approval queue items, and models pause/resume run state.
-
-## Current Build Status
-
-- Phase 0 scaffold: complete.
-- Phase 1 read-only discovery design target: defined in roadmap/docs.
-- Phase 2 risk and policy enforcement: implemented.
-- Phase 3 task and approval packet generation: implemented.
-
-## Immediate Next Commit Target
-
-1. Add repository-orchestrator routing adapters.
-2. Add typed state-store interfaces for persisted task packets, approvals, and agent runs.
-3. Add read-only GitHub discovery adapter for project-health evidence.
-4. Keep external side effects blocked until explicit human authorization exists.
+The new runtime does not add autonomous merge, deployment, billing, procurement award, paid media, public send, or production mutation capabilities. Existing GitHub write tools remain approval-gated stubs. Any future real adapter must independently enforce exact-action digest matching, single-use approval consumption, idempotency, rollback, and postcondition validation.
