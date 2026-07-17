@@ -28,12 +28,14 @@ function createPendingApproval({ approvalPacket, taskPacket = null, run = null, 
     task_id: taskPacket ? taskPacket.task_id : null,
     run_id: run ? run.run_id : null,
     action_type: approvalPacket.action_type,
+    action_digest: approvalPacket.action_digest || null,
+    exact_action: approvalPacket.exact_action || null,
     risk_level: approvalPacket.risk_level,
     required_approver_roles: normalizeArray(approvalPacket.required_approver_roles),
     approved_roles: [],
     decision_ids: [],
     decisions: [],
-    constraints: {},
+    constraints: { ...(approvalPacket.constraints || {}) },
     status: 'pending',
     expires_at: approvalPacket.expires_at,
     created_at: createdAt || new Date().toISOString()
@@ -54,6 +56,7 @@ function pauseRunForApproval(run, approvalPacket, taskPacket = null) {
         approval_id: approvalPacket.approval_id,
         task_id: taskPacket ? taskPacket.task_id : null,
         action_type: approvalPacket.action_type,
+        action_digest: approvalPacket.action_digest || null,
         risk_level: approvalPacket.risk_level
       }
     ]
@@ -78,6 +81,7 @@ function recordApprovalDecision({ pendingApproval, decisionType, approverRole, d
   const base = {
     approval_id: pendingApproval.approval_id,
     queue_id: pendingApproval.queue_id || null,
+    action_digest: pendingApproval.action_digest || null,
     decision_type: decisionType,
     approver_role: role,
     decided_at: decidedAt || new Date().toISOString(),
@@ -90,6 +94,9 @@ function recordApprovalDecision({ pendingApproval, decisionType, approverRole, d
 function applyApprovalDecision(pendingApproval, decisionRecord) {
   if (!decisionRecord || decisionRecord.approval_id !== pendingApproval.approval_id) {
     throw new Error('Decision record does not match pending approval.');
+  }
+  if (pendingApproval.action_digest && decisionRecord.action_digest !== pendingApproval.action_digest) {
+    throw new Error('Decision record action digest does not match pending approval.');
   }
   const decisions = [...(pendingApproval.decisions || []), decisionRecord];
   const decisionIds = Array.from(new Set([...(pendingApproval.decision_ids || []), decisionRecord.decision_id]));
@@ -126,7 +133,9 @@ function resumeRunFromApprovalQueue(run, approvalQueue) {
     approved: 'running',
     rejected: 'blocked',
     changes_requested: 'planned',
-    pending: 'paused_for_approval'
+    pending: 'paused_for_approval',
+    expired: 'blocked',
+    consumed: 'blocked'
   };
   const nextStatus = statusMap[approvalQueue.status] || 'blocked';
   return {
@@ -139,6 +148,7 @@ function resumeRunFromApprovalQueue(run, approvalQueue) {
         type: 'approval_queue_status',
         approval_id: approvalQueue.approval_id,
         queue_id: approvalQueue.queue_id,
+        action_digest: approvalQueue.action_digest || null,
         approval_status: approvalQueue.status,
         approved_roles: approvalQueue.approved_roles,
         next_status: nextStatus
@@ -161,6 +171,7 @@ function resumeRunFromApprovalDecision(run, decisionRecord) {
         type: 'approval_decision',
         approval_id: decisionRecord.approval_id,
         decision_id: decisionRecord.decision_id,
+        action_digest: decisionRecord.action_digest || null,
         decision_type: decisionRecord.decision_type,
         next_status: status
       }
