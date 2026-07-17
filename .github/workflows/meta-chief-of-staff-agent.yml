@@ -37,5 +37,20 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Validate governed runtime
-        run: npm run check
+      - name: Validate project package
+        run: npm run validate
+
+      - name: Validate deterministic policy
+        run: npm run policy:check
+
+      - name: Validate GitHub operating protocol
+        run: npm run protocol:github
+
+      - name: Run legacy regression tests
+        run: npm run test:legacy
+
+      - name: Run exact-action regression tests
+        run: npm run test:exact-action
+
+      - name: Compile and run SDK security tests
+        run: npm run test:sdk
