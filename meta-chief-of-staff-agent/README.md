@@ -72,7 +72,32 @@ meta-chief-of-staff-agent/
 ```bash
 npm run validate
 npm run dry-run
+cd agents-sdk
+uv sync
+uv run python -m src.main "Draft a cross-repository task packet for read-only health reporting."
 ```
+
+## Agents SDK Runtime (Phase 4)
+
+Phase 4 adds a Python OpenAI Agents SDK runtime with handoff orchestration:
+
+- `meta-chief-of-staff-agent` (top-level manager)
+- `cross-repository-orchestrator`
+- `procurement-oversight-agent`
+- `marketing-oversight-agent`
+- `finance-ops-agent`
+- `security-compliance-agent`
+- `audit-evidence-agent`
+
+Run the interactive runtime with:
+
+```bash
+cd agents-sdk
+uv sync
+uv run python -m src.main --approver-roles engineering_approver "Run project health routing for AURELEAN and DesignOS."
+```
+
+Use `--approver-roles` to scope which policy gates are open for this session (comma-separated).
 
 The included JavaScript is intentionally deterministic and dependency-free. It validates that the design package is coherent, loads the repository registry, classifies requested actions by risk, and produces approval packets where human authorization is required.
 

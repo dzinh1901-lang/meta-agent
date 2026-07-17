@@ -24,7 +24,10 @@ const requiredFiles = [
   'policies/action-risk-policy.yaml',
   'src/policy-engine.js',
   'src/approval-packet-builder.js',
+  'src/schemas.js',
   'src/repository-registry.js',
+  'src/session-state.js',
+  'src/phase3-tools.js',
   'src/meta-chief-agent.js'
 ];
 
