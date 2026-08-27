@@ -1,0 +1,56 @@
+name: Meta Chief of Staff Agent
+
+on:
+  pull_request:
+    paths:
+      - 'meta-chief-of-staff-agent/**'
+      - '.github/workflows/meta-chief-of-staff-agent.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'meta-chief-of-staff-agent/**'
+      - '.github/workflows/meta-chief-of-staff-agent.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: meta-chief-of-staff-agent-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: meta-chief-of-staff-agent
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate project package
+        run: npm run validate
+
+      - name: Validate deterministic policy
+        run: npm run policy:check
+
+      - name: Validate GitHub operating protocol
+        run: npm run protocol:github
+
+      - name: Run legacy regression tests
+        run: npm run test:legacy
+
+      - name: Run exact-action regression tests
+        run: npm run test:exact-action
+
+      - name: Compile and run SDK security tests
+        run: npm run test:sdk

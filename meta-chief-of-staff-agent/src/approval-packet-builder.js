@@ -29,6 +29,29 @@ function assertValidIsoDate(value, fieldName) {
   return value;
 }
 
+function validateExactAction(exactAction, actionType) {
+  if (typeof exactAction === 'undefined' || exactAction === null) return null;
+  if (typeof exactAction !== 'object' || Array.isArray(exactAction)) {
+    throw new Error('exactAction must be an object when provided.');
+  }
+  const bindingVersion = requireNonEmptyString(exactAction.binding_version, 'exactAction.binding_version');
+  const exactActionType = requireNonEmptyString(exactAction.action_type, 'exactAction.action_type');
+  const actionDigest = requireNonEmptyString(exactAction.action_digest, 'exactAction.action_digest');
+  if (exactActionType !== actionType) {
+    throw new Error(`exactAction.action_type must match action.type (${actionType}).`);
+  }
+  const { action_digest: _providedDigest, ...digestPayload } = exactAction;
+  const computedDigest = hashPayload(digestPayload);
+  if (actionDigest !== computedDigest) {
+    throw new Error('exactAction.action_digest does not match the normalized exact action payload.');
+  }
+  return {
+    exact_action: exactAction,
+    action_digest: actionDigest,
+    binding_version: bindingVersion
+  };
+}
+
 function buildApprovalPacket({
   action,
   decision,
@@ -43,7 +66,8 @@ function buildApprovalPacket({
   costImpact,
   customerSupplierImpact,
   auditCorrelationId,
-  status = 'pending'
+  status = 'pending',
+  exactAction
 }) {
   if (!decision || decision.blocked) {
     throw new Error('Approval packets cannot be created for hard-blocked actions.');
@@ -59,6 +83,13 @@ function buildApprovalPacket({
   const affectedRepositories = normalizeArray(repositories);
   if (affectedRepositories.length === 0) throw new Error('At least one affected repository is required.');
   if (typeof evidence !== 'object' || Array.isArray(evidence)) throw new Error('evidenceBundle must be an object.');
+  if (typeof constraints !== 'object' || constraints === null || Array.isArray(constraints)) {
+    throw new Error('constraints must be an object.');
+  }
+  const exactBinding = validateExactAction(exactAction, actionType);
+  if (exactBinding && constraints.action_digest && constraints.action_digest !== exactBinding.action_digest) {
+    throw new Error('constraints.action_digest must match exactAction.action_digest.');
+  }
 
   const base = {
     requested_action: requestedAction,
@@ -71,7 +102,9 @@ function buildApprovalPacket({
     evidence_hash: hashPayload(evidence),
     expected_outcome: expectedOutcome || 'Scoped, approval-gated execution only.',
     rollback_plan: rollbackPlan || 'Stop run, discard generated changes, and preserve audit record.',
-    constraints,
+    constraints: exactBinding
+      ? { ...constraints, action_digest: exactBinding.action_digest }
+      : constraints,
     expires_at: expiry,
     created_at: now,
     status,
@@ -83,7 +116,8 @@ function buildApprovalPacket({
     },
     risk_reason: decision.reason,
     block_reasons: [],
-    audit_correlation_id: auditCorrelationId || null
+    audit_correlation_id: auditCorrelationId || null,
+    ...(exactBinding || {})
   };
 
   if (typeof costImpact !== 'undefined') base.cost_impact = costImpact;
@@ -97,6 +131,7 @@ function buildApprovalPacket({
     requesting_agent: base.requesting_agent,
     required_approver_roles: base.required_approver_roles,
     evidence_hash: base.evidence_hash,
+    action_digest: base.action_digest || null,
     expires_at: base.expires_at,
     audit_correlation_id: base.audit_correlation_id
   };
@@ -104,4 +139,10 @@ function buildApprovalPacket({
   return assertRequiredFields(packet, APPROVAL_PACKET_REQUIRED_FIELDS, 'ApprovalPacket');
 }
 
-module.exports = { APPROVAL_PACKET_REQUIRED_FIELDS, defaultExpiryForRisk, assertValidIsoDate, buildApprovalPacket };
+module.exports = {
+  APPROVAL_PACKET_REQUIRED_FIELDS,
+  defaultExpiryForRisk,
+  assertValidIsoDate,
+  validateExactAction,
+  buildApprovalPacket
+};

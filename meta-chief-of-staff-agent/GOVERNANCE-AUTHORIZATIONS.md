@@ -4,6 +4,8 @@
 
 The Chief of Staff Agent is authorized to supervise and coordinate. It is not authorized to self-approve, spend, publish, deploy, award, expose secrets, or override repository-specific product policies.
 
+The language model may propose an action and trigger an approval interruption. Only the trusted runtime may record a human decision or apply it to serialized SDK run state.
+
 ## 2. Approval Roles
 
 | Role | Scope |
@@ -15,6 +17,8 @@ The Chief of Staff Agent is authorized to supervise and coordinate. It is not au
 | Procurement Approver | Vendor shortlisting, supplier selection, procurement process |
 | Marketing Approver | Campaign claims, public launch, customer/supplier outreach, paid media |
 | Legal/Compliance Approver | Contracts, regulated domains, privacy, export-control-sensitive areas |
+
+Approver roles must be supplied by authenticated hosting middleware. In operator-mode CLI use, `COSMOS_APPROVER_ROLES` is the trusted allowlist; a model-provided or command-line role cannot grant itself authority outside that allowlist.
 
 ## 3. Risk Classes
 
@@ -44,6 +48,8 @@ Default: approval required, often multi-approver.
 
 ## 4. Approval Packet Required Fields
 
+Every approval packet requires:
+
 - `approval_id`
 - `requested_action`
 - `action_type`
@@ -57,6 +63,16 @@ Default: approval required, often multi-approver.
 - `constraints`
 - `expires_at`
 - `decision_options`
+
+For an OpenAI Agents SDK tool interruption, the packet must additionally include:
+
+- `exact_action`
+- `binding_version`
+- `action_digest`
+- `sdk_run_id`
+- `sdk_interruption_index`
+
+`exact_action` binds the approval to the tool name, requesting agent, deterministic action type, repository, environment, normalized arguments, and SHA-256 digest. Any material change requires a new packet.
 
 ## 5. Always-Blocked Without Explicit Human Authorization
 
@@ -73,6 +89,8 @@ Default: approval required, often multi-approver.
 - Removing approval gates.
 - Agent self-approval.
 
+Actions marked as prohibited or default-blocked by deterministic policy cannot be made executable merely by creating a normal approval packet.
+
 ## 6. Approval Expiry
 
 Approvals must expire. Default recommended TTL:
@@ -82,26 +100,40 @@ Approvals must expire. Default recommended TTL:
 - High: 72 hours.
 - Critical: 24 hours or one deployment window.
 
+Expired, rejected, changes-requested, or consumed approvals are not executable.
+
 ## 7. Approval Constraints
 
-Approvals must be scoped. Example:
+Approvals must be scoped to the exact proposed action. Example:
 
 ```json
 {
   "allowed_repository": "dzinh1901-lang/aurelean-app",
-  "allowed_action": "create_pull_request_draft",
-  "forbidden_actions": ["merge", "deploy", "send_external_message"],
-  "expires_at": "2026-06-18T00:00:00Z"
+  "target_environment": "non-production",
+  "action_digest": "<sha256-of-normalized-exact-action>",
+  "forbidden_actions": [
+    "merge_pull_request",
+    "trigger_deployment",
+    "request_secret_access"
+  ]
 }
 ```
 
-## 8. Audit Requirement
+Multi-approver constraints are monotonic. A later approver may add restrictions but cannot replace an existing fixed constraint with a conflicting value.
+
+## 8. Single-Use Approval
+
+An approved SDK interruption is single-use. After the exact interruption executes or leaves the pending interruption set, its packet and queue transition to `consumed`. Replaying a consumed packet or applying it to a different run or digest is blocked.
+
+## 9. Audit Requirement
 
 Every approval and rejection must link to:
 
-- task packet ID
-- policy version
-- evidence hash
-- approver identity/role
-- decision timestamp
-- final outcome
+- task packet or SDK run ID;
+- policy version;
+- evidence hash;
+- exact-action digest when applicable;
+- approver identity and role;
+- decision timestamp;
+- queue state transition;
+- final outcome or consumption record.
